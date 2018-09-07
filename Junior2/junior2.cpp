@@ -82,7 +82,11 @@ int main(int argc, const char* argv[]) {
 
     if (argc > 1) tryOpen(argv[1], fp);
 
-    if (fp == NULL && tryOpen("res/enttwist.txt", fp)) return true;
+    if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
+        fclose(fp);
+        freeWordMap();
+        return 1;
+    }
 
     // lese Eingabedatei zeilenweise
     while ((read = getline(&line, &len, fp)) != (size_t)-1) {
@@ -149,6 +153,7 @@ int main(int argc, const char* argv[]) {
     }
 
     printf("\n");
+    free(line);
     fclose(fp);
     freeWordMap();
     return 0;
