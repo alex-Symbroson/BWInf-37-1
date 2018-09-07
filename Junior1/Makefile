@@ -20,11 +20,12 @@ FILES_CLEAN = *.o
 OUTPUT = junior1
 
 	# main dependencies
-MAINDEP = $(DIR_BUILD)$(OUTPUT)
-
 ifneq ($(PCH),)
-	MAINDEP += $(DIR_INC)$(PCH).gch
+	MAINDEP = $(DIR_INC)$(PCH).gch
 endif
+
+MAINDEP += $(DIR_BUILD)$(OUTPUT)
+
 
 	# list of source files
 SRC = $(wildcard $(DIR_SRC)*.cpp)

@@ -1,0 +1,11 @@
+Turing Hoare Dijkstra Knuth Codd
+Turing Hoare
+Turing Dijkstra
+Hoare Turing
+Hoare Dijkstra
+Hoare Codd
+Knuth Turing
+Knuth Dijkstra
+Codd Turing
+Codd Dijkstra
+Codd Knuth
