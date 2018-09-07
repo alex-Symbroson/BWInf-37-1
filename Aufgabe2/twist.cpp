@@ -4,7 +4,11 @@
  */
 
 #include "headers.hpp"
+
 using namespace std;
+
+#define error(a, ...) \
+    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
 
 // (Zeiger auf Wortanfang) Liste[Anfangsbuchstabe][Wortlänge]
 #define MAXLEN 40
@@ -31,7 +35,7 @@ uint8_t charNum(char c) {
 bool tryOpen(const char* name, FILE*& fp) {
     fp = fopen(name, "r");
     if (fp == NULL) {
-        printf("\033[1;33mError opening '%s'\033[0;37\n", name);
+        error("Error opening '%s'", name);
         return true;
     }
     return false;
@@ -40,10 +44,11 @@ bool tryOpen(const char* name, FILE*& fp) {
 bool initWordMap() {
     FILE* fp;
     char* line = NULL;
-    size_t len = 0, read;
+    ssize_t read;
+    size_t len = 0;
 
     if (tryOpen("res/woerterliste2.txt", fp)) return true;
-    while ((read = getline(&line, &len, fp)) != (size_t)-1) {
+    while ((read = getline(&line, &len, fp)) != -1) {
         if (--read > 1) {
             if (read > MAXLEN) printf("word %.*s too long\n", (int)read, line);
 
@@ -78,18 +83,20 @@ int main(int argc, const char* argv[]) {
     if (initWordMap()) return 1;
     FILE* fp   = NULL;
     char* line = NULL;
-    size_t len = 0, read;
+    ssize_t read;
+    size_t len = 0;
 
     if (argc > 1) tryOpen(argv[1], fp);
 
     if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
+        error("initialization failed");
         fclose(fp);
         freeWordMap();
         return 1;
     }
 
     // lese Eingabedatei zeilenweise
-    while ((read = getline(&line, &len, fp)) != (size_t)-1) {
+    while ((read = getline(&line, &len, fp)) != -1) {
         if (read > 1) {
             char *c = line, *b;
             uint8_t l;

@@ -13,6 +13,9 @@
 
 using namespace std;
 
+#define error(a, ...) \
+    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
+
 #define FOLLOW_NOP 0
 #define FOLLOW_UKN 1
 #define FOLLOW_YES 2
@@ -29,7 +32,7 @@ uint8_t* follow;
 bool tryOpen(const char* name, FILE*& fp) {
     fp = fopen(name, "r");
     if (fp == NULL) {
-        printf("\033[1;33mError opening '%s'\033[0;37\n", name);
+        error("Error opening '%s'", name);
         return true;
     }
     return false;
@@ -44,12 +47,13 @@ User* findUser(char* name) {
 
 bool initUsers(FILE* fp) {
     char *line = NULL, *pch;
-    size_t len = 0, read;
+    ssize_t read;
+    size_t len = 0;
 
     // lese Namenliste
     read = getline(&line, &len, fp);
-    if (read == (size_t)-1) {
-        printf("\033[1;33mError reading file\033[0;37m\n");
+    if (read == -1) {
+        error("Error reading file");
         return true;
     }
 
@@ -68,7 +72,7 @@ bool initUsers(FILE* fp) {
 
     // lese Folgebeziehungen
     User* cur = NULL;
-    while ((read = getline(&line, &len, fp)) != (size_t)-1) {
+    while ((read = getline(&line, &len, fp)) != -1) {
         pch = strtok(line, " \n");
         if (cur == NULL || strcmp(pch, cur->name)) cur = findUser(pch);
         cur->follows.push_back(findUser(strtok(NULL, " \n")));
@@ -127,6 +131,7 @@ int main(int argc, const char* argv[]) {
     // Datei einlesen
     if (initUsers(fp)) {
         fclose(fp);
+        error("initialization failed");
         return 1;
     }
 
