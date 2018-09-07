@@ -1,5 +1,5 @@
 
-SUBDIRS = Junior1 Aufgabe1 Aufgabe2
+SUBDIRS = Junior1 Junior2 Aufgabe1 Aufgabe2
 
 ifneq ($(ARGS),)
 	OP += ARGS=$(ARGS)
