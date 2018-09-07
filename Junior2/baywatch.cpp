@@ -75,12 +75,6 @@ void freeBaywatch() {
     free(watched[1]);
 }
 
-uint8_t charNum(char c) {
-    if (c >= '0' && c <= '9') return c - '0' + 1;
-    if (c == '?') return 0;
-    return 10;
-}
-
 int main(int argc, const char* argv[]) {
     FILE* fp = NULL;
 

@@ -73,7 +73,7 @@ bool initUsers(FILE* fp) {
     // lese Folgebeziehungen
     User* cur = NULL;
     while ((read = getline(&line, &len, fp)) != -1) {
-        pch = strtok(line, " \n");
+        if (!(pch = strtok(line, " \n"))) continue;
         if (cur == NULL || strcmp(pch, cur->name)) cur = findUser(pch);
         cur->follows.push_back(findUser(strtok(NULL, " \n")));
     }
@@ -180,9 +180,11 @@ int main(int argc, const char* argv[]) {
 
     // Ausgabe
     if (stars == 1)
-        printf("\n%s ist der Superstar!\n", first->name);
+        printf("\n\033[0;32m%s ist der Superstar!\033[0;37m\n", first->name);
     else
-        printf("\nEs gibt keinen Superstar in dieser Gruppe.\n");
+        printf(
+            "\n\033[0;33mEs gibt keinen Superstar in dieser "
+            "Gruppe.\033[0;37m\n");
 
     printf("\nPersonen:%4i\nPreis:   %4i€\n", count, cost);
     printf(
