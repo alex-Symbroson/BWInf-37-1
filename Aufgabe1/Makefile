@@ -17,7 +17,7 @@ LDFLAGS  = -pie
 FILES_CLEAN = *.o
 
 	# output file name
-OUTPUT = aufgabe1
+OUTPUT = superstar.out
 
 	# main dependencies
 ifneq ($(PCH),)

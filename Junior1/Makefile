@@ -17,7 +17,7 @@ LDFLAGS  = -pie
 FILES_CLEAN = *.o
 
 	# output file name
-OUTPUT = junior1
+OUTPUT = aufundab.out
 
 	# main dependencies
 ifneq ($(PCH),)

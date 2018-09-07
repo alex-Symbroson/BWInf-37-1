@@ -17,7 +17,7 @@ LDFLAGS  = -pie
 FILES_CLEAN = *.o
 
 	# output file name
-OUTPUT = junior2
+OUTPUT = twist.out
 
 	# main dependencies
 ifneq ($(PCH),)
