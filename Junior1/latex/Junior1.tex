@@ -1,0 +1,152 @@
+\documentclass[a4paper,10pt,ngerman]{scrartcl}
+\usepackage{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+
+% Die nächsten drei Felder bitte anpassen:
+\newcommand{\Name}{Symbroson} % Teamname oder eigenen Namen angeben
+\newcommand{\TeamId}{00165}                       % Team-ID aus dem PMS
+\newcommand{\Aufgabe}{Aufgabe 1: Superstar} % Aufgabennummer und -name
+
+% Kopf- und Fußzeilen
+\usepackage{scrlayer-scrpage}
+\setkomafont{pageheadfoot}{\textrm}
+\ifoot{\Name}
+\cfoot{\thepage}
+\chead{\Aufgabe}
+\ofoot{Team-ID: \TeamId}
+
+% Für mathematische Befehle und Symbole
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Für Bilder
+\usepackage{graphicx}
+
+% Für Algorithmen
+\usepackage{algpseudocode}
+
+% Für Quelltext
+\usepackage{listings}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{
+    keywordstyle=\color{blue}, commentstyle=\color{mygreen},
+    stringstyle=\color{mymauve}, rulecolor=\color{black},
+    basicstyle=\footnotesize\ttfamily, numberstyle=\tiny\color{mygray},
+    captionpos=b, keepspaces=true, numberfirstline=false,
+    numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
+    showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
+    language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
+    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+}
+
+% Diese beiden Pakete müssen als letztes geladen werden
+\usepackage{hyperref} % Anklickbare Links im Dokument
+\usepackage{cleveref}
+
+\hypersetup{
+    colorlinks,breaklinks,
+    %urlcolor=[rgb]{0,0,1},
+    linkcolor=[rgb]{0,0.1,0.6}
+}
+
+% Daten für die Titelseite
+\title{\Aufgabe}
+\author{\Name\\Team-ID: \TeamId}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Lösungsidee}
+Diese Aufgabe kann am besten durch Brute-Force gelöst werden. Dh. es wird jede Würfelzahl durchprobiert, ob der Spieler bei dieser das Ziel erreicht oder nicht. Um zu erkennen, ob man das Ziel nicht erreichen kann, muss geprüft werden, ob man das gerade betretene Feld bereits betreten hat. Falls ja, muss der Prozess abgebrochen werden, da man sonst in eine Schleife gerät.
+
+
+\section{Umsetzung}
+
+\subsection{Leitern}
+Zunächst müssen alle Leitern katalogisiert werden. Da es keine Eingabedatei gibt sondern nur ein einziges Spielfeld kann dies durch ein konstantes Array geschehen, in dem jeweils Anfang und Ende jeder Leiter fortlaufend gespeichert werden.
+
+\subsection{Felder}
+In einem zweiten Array werden aller Spielfelder durch eine Klasse dargestellt, die den 'bereits betreten' Status und ggf. das Zielfeld der Leiter enthält.
+
+\subsection{Validierung}
+Nun muss für jede Würfelzahl solange die 'Spielfigur' gesetzt werden, bis diese am Ziel angelangt oder auf ein bereits betretrenes Feld gelangt. Dies wird dann dementsprechend mit der Anzahl der Züge tabellarisch ausgegeben.
+
+%\section{Beispiele}
+%\subsection{Sonderfall 1} Ein weiterer Sonderfall wäre der, dass keine Übereinstimmung gefunden wird. Auch dies muss dem Nutzer mitgeteilt werden und der Papagei notfalls eine Ehrenrunde drehen.
+
+\section{Quellcode}
+
+\begin{lstlisting} %[frame=single]
+
+#define LEDDER_COUNT 12
+#define FIELD_COUNT 100
+#define FIELD(p) fields[p - 1]
+
+struct Field {
+    bool touched   = false; // Status: Feld betreten
+    uint8_t target = 0;     // ggf. Ziel der Leiter
+} fields[FIELD_COUNT + 1];
+
+// Leitern
+uint8_t ledders[LEDDER_COUNT * 2] = {6,  27, 14, 19, 21, 53, 31, 42,
+                                     33, 38, 46, 62, 51, 59, 57, 96,
+                                     65, 85, 68, 80, 70, 76, 92, 98};
+
+int main(int argc, const char* argv[]) {
+    uint8_t n, // Würfelzahl
+        p,     // Position
+        i;     // Zähler
+
+    uint32_t c; // Wurfanzahl
+
+    // Wende Leiterliste an
+    for (i = 0; i < LEDDER_COUNT * 2; i += 2) {
+        FIELD(ledders[i]).target     = ledders[i + 1];
+        FIELD(ledders[i + 1]).target = ledders[i];
+    }
+
+    printf(
+        "Zahl | Ziel | Würfe\n"
+        "-----+------+------\n");
+
+    // alle Würfelzahlen durchprobieren
+    for (n = 1; n <= 6; n++) {
+        p = 1;
+        c = 0;
+
+        // resette Felder
+        for (i = 0; i < FIELD_COUNT; i++) fields[i].touched = false;
+
+        // solange Ziel nicht erreicht
+        while (p != FIELD_COUNT) {
+            p += n;
+            c++;
+
+            // 100 überschritten
+            if (p > FIELD_COUNT - 1) p = 2 * FIELD_COUNT - p;
+
+            // ggf. Leiter benutzen
+            if (FIELD(p).target) p = FIELD(p).target;
+
+            // Feld bereits betreten? -> abbrechen
+            if (FIELD(p).touched) break;
+
+            FIELD(p).touched = true;
+        }
+
+        printf("%4i | %4s | %4i\n", n, p == FIELD_COUNT ? "ja" : "nein", c);
+    }
+}
+\end{lstlisting}
+
+\end{document}
