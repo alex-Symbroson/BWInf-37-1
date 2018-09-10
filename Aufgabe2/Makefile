@@ -3,7 +3,7 @@
 DIR_BUILD = build/
 DIR_SRC   = ./
 DIR_INC   = ./
-PCH       = headers.hpp
+PCH       = #headers.hpp
 
 COMPILER = g++ -std=c++11
 

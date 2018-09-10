@@ -7,9 +7,13 @@
 #include <stdio.h>
 
 #define LEDDER_COUNT 12
+#define FIELD_COUNT 100
+#define FIELD(p) fields[p - 1]
 
-// Felder (0: unberührt, 1: betreten)
-bool fields[100] = {};
+struct Field {
+    bool touched   = false; // Status: Feld betreten
+    uint8_t target = 0;     // ggf. Ziel der Leiter
+} fields[FIELD_COUNT + 1];
 
 // Leitern
 uint8_t ledders[LEDDER_COUNT * 2] = {6,  27, 14, 19, 21, 53, 31, 42,
@@ -23,41 +27,41 @@ int main(int argc, const char* argv[]) {
 
     uint32_t c; // Wurfanzahl
 
-    printf("Zahl | Ziel | Würfe\n-----+------+------\n");
+    // Wende Leiterliste an
+    for (i = 0; i < LEDDER_COUNT * 2; i += 2) {
+        FIELD(ledders[i]).target     = ledders[i + 1];
+        FIELD(ledders[i + 1]).target = ledders[i];
+    }
 
+    printf(
+        "Zahl | Ziel | Würfe\n"
+        "-----+------+------\n");
+
+    // alle Würfelzahlen durchprobieren
     for (n = 1; n <= 6; n++) {
         p = 1;
         c = 0;
 
         // resette Felder
-        for (i = 0; i < 100; i++) fields[i] = false;
+        for (i = 0; i < FIELD_COUNT; i++) fields[i].touched = false;
 
-        while (p != 100) {
+        // solange Ziel nicht erreicht
+        while (p != FIELD_COUNT) {
             p += n;
             c++;
 
             // 100 überschritten
-            if (p > 100) p = 200 - p;
+            if (p > FIELD_COUNT - 1) p = 2 * FIELD_COUNT - p;
 
-            // suche Leiter
-            for (i = 0; i < LEDDER_COUNT * 2; i++) {
-                // Leiter gefunden?
-                if (p == ledders[i]) {
-                    if (i % 2 == 0)         // Leiteranfang
-                        p = ledders[i + 1]; // gehe zu ~ende
-                    else                    // Leiterende
-                        p = ledders[i - 1]; // gehe zu ~anfang
-
-                    break;
-                }
-            }
+            // ggf. Leiter benutzen
+            if (FIELD(p).target) p = FIELD(p).target;
 
             // Feld bereits betreten? -> abbrechen
-            if (fields[p - 1]) break;
+            if (FIELD(p).touched) break;
 
-            fields[p - 1] = true;
+            FIELD(p).touched = true;
         }
 
-        printf("%4i | %4s | %4i\n", n, p == 100 ? "ja" : "nein", c);
+        printf("%4i | %4s | %4i\n", n, p == FIELD_COUNT ? "ja" : "nein", c);
     }
 }

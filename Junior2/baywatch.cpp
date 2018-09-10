@@ -14,8 +14,11 @@
 
 #define CHRCNT 12
 
-// const char* biomes[] = {"Wald", "Wiese", "Häuser", "Wüste", "See", "Sumpf"};
-char* watched[2];
+/*const char* biomes[] = {"Wald",  "Wiese", "Häuser",    "Wüste", "See",
+                        "Sumpf", "Berge", "Flachland", "Weide"};
+*/
+
+char* watch[2];
 uint16_t count, digitcnt, *digits;
 
 bool tryOpen(const char* name, FILE*& fp) {
@@ -27,90 +30,98 @@ bool tryOpen(const char* name, FILE*& fp) {
     return false;
 }
 
+void freeBaywatch() {
+    free(digits);
+    free(watch[0]);
+    free(watch[1]);
+}
+
 bool initBaywatch(FILE* fp) {
     char* line = NULL;
     ssize_t read;
     size_t len = 0;
 
-    // Biome einlesen
+    // George-Liste einlesen
     if ((read = getline(&line, &len, fp)) != -1)
-        watched[0] = strndup(line, read - 1);
+        watch[0] = strndup(line, read - 1);
     else
         return true;
 
-    if (getline(&line, &len, fp) != -1)
-        watched[1] = strndup(line, read - 1);
+    // Longstock-Liste einlesen
+    if ((read = getline(&line, &len, fp)) != -1)
+        watch[1] = strndup(line, read - 1);
     else {
         free(line);
-        free(watched[0]);
+        free(watch[0]);
         return true;
     }
 
-    count = read;
+    count    = read;
+    digitcnt = 0;
+    digits   = (uint16_t*)malloc(sizeof(uint16_t) * read);
 
     // speichere zu prüfende Zeichenpositionen
-    digitcnt = 0;
-    digits   = (uint16_t*)malloc(sizeof(uint16_t) * read / 2);
-
     for (len = 0; len < count; len++)
-        if (isdigit(watched[1][len])) digits[digitcnt++] = len;
+        if (isdigit(watch[1][len])) digits[digitcnt++] = len;
 
-    if (digitcnt != read)
-        digits = (uint16_t*)realloc(digits, sizeof(uint16_t) * digitcnt);
+    digits = (uint16_t*)realloc(digits, sizeof(uint16_t) * digitcnt);
 
     free(line);
 
     if (!digitcnt) {
         error("no biome specializations found (only '?'?)");
-        free(watched[0]);
-        free(watched[1]);
+        freeBaywatch();
         return true;
     }
     return false;
 }
 
-void freeBaywatch() {
-    free(digits);
-    free(watched[0]);
-    free(watched[1]);
-}
-
 int main(int argc, const char* argv[]) {
     FILE* fp = NULL;
 
+    // Input oder Default Datei öffnen
     if (argc > 1) tryOpen(argv[1], fp);
     if (fp == NULL && tryOpen("res/baywatch1.txt", fp)) {
         fclose(fp);
         return 1;
     }
 
-    // Datei einlesen
+    // Datei Einlesen & Parsen
     if (initBaywatch(fp)) {
         error("initialization failed");
         fclose(fp);
         return 1;
     }
 
-    uint16_t i, d = 0;
+    uint16_t i, d = 0, n = 0;
+    printf("base:\n%s\n\n", watch[1]);
+
     do {
+        // Numerischen Buchstaben aus Longstock-Liste suchen
         while (d < count &&
-               watched[0][(d + *digits) % count] != watched[1][*digits])
+               watch[0][(d + *digits) % count] != watch[1][*digits])
             d++;
 
         if (d >= count) break;
 
-        for (i = 1; i < digitcnt; i++) {
-            if (watched[0][(d + digits[i]) % count] != watched[1][digits[i]])
-                break;
-        }
+        // Mustervalidierung
+        for (i = 1; i < digitcnt; i++)
+            if (watch[0][(d + digits[i]) % count] != watch[1][digits[i]]) break;
 
-        if (i == digitcnt)
+        // Ausgabe
+        if (i == digitcnt) {
+            n++;
             printf(
-                "found at +%3i:\n%s %.*s\n", d, watched[0] + d, d, watched[0]);
-
+                "gefunden bei +%3i:\n%s %.*s\n\n", d, watch[0] + d, d,
+                watch[0]);
+        }
     } while (++d < count);
 
-    printf("base:\n%s\n", watched[1]);
+    // Zusammenfassung
+    if (n)
+        printf("%i  Ergebnis%s gefunden!\n", n, n == 1 ? "" : "se");
+    else
+        error("keine Ergebnisse gefunden!\n");
 
     freeBaywatch();
     fclose(fp);

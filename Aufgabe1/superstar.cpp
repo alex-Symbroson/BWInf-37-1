@@ -16,18 +16,23 @@ using namespace std;
 #define error(a, ...) \
     fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
 
-#define FOLLOW_NOP 0
-#define FOLLOW_UKN 1
-#define FOLLOW_YES 2
+#define FOLLOW_NOP 0 // folgt nicht
+#define FOLLOW_UKN 1 // nicht abgefragt
+#define FOLLOW_YES 2 // folgt
 
 struct User {
-    char* name;
-    uint16_t star, id;
-    vector<User*> follows;
+    char* name;            // Name
+    uint16_t id;           // ID = users-Index
+    bool star;             // Status: kann Superstar sein
+    vector<User*> follows; // Folgt-Liste
 };
-vector<User> users;
-uint16_t count = 0, stars = 0, cost = 0;
-uint8_t* follow;
+vector<User> users; // User-Liste
+
+uint16_t count = 0, // gesamt User-Anzahl
+    stars      = 0, // verbleibende Superstars
+    cost       = 0; // entstandene Kosten
+
+uint8_t* follow; // gespeicherte Abfragen
 
 bool tryOpen(const char* name, FILE*& fp) {
     fp = fopen(name, "r");
@@ -38,10 +43,11 @@ bool tryOpen(const char* name, FILE*& fp) {
     return false;
 }
 
+// sucht User per Namen und gibt einen Zeiger zurück
 User* findUser(char* name) {
     for (User& u: users)
         if (!strcmp(name, u.name)) return &u;
-    printf("couldn't find user '%s'\n", name);
+    error("couldn't find user '%s'\n", name);
     return NULL;
 }
 
@@ -64,7 +70,10 @@ bool initUsers(FILE* fp) {
     pch = strtok(buffer, " \n");
     while (pch != NULL) {
         if (isalpha(*pch)) {
-            users.push_back({.name = strdup(pch), .star = 1, .id = count});
+            users.push_back({.name    = strdup(pch),
+                             .id      = count,
+                             .star    = true,
+                             .follows = {}});
             count++;
         }
         pch = strtok(NULL, " \n");
@@ -97,11 +106,11 @@ bool follows(User& a, User& b, bool nobrk) {
 
         default:
             cost++;
+            // suche Übereinstimmung
             for (User* u: a.follows) {
                 if (u == &b) {
                     printf("   ja%5i |%c", cost, "\n "[nobrk]);
                     *folw = FOLLOW_YES;
-                    if (b.star) b.star++;
                     if (a.star) {
                         a.star = 0;
                         stars--;
@@ -112,7 +121,6 @@ bool follows(User& a, User& b, bool nobrk) {
 
             printf(" nein%5i |%c", cost, "\n "[nobrk]);
             *folw = FOLLOW_NOP;
-            if (a.star) a.star++;
             if (b.star) {
                 b.star = 0;
                 stars--;
@@ -149,6 +157,7 @@ int main(int argc, const char* argv[]) {
     for (i = 0; i < count; i++)
         for (j = 0; j < count; j++) follow[i * count + j] = FOLLOW_UKN;
 
+    // schließe User als Superstar aus
     User *first = &users[0], *second;
     while (stars > 1) {
         second = NULL;
