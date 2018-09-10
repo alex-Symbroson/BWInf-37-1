@@ -1,0 +1,218 @@
+
+/*
+ *
+ */
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <forward_list>
+
+using namespace std;
+
+#define error(a, ...) \
+    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
+
+#define MAXLEN 40       // maximale Wortlänge
+#define CHRCNT (26 + 5) // = lowercase + äöüß + 1 for others
+
+// speichert Wörter sortiert nach Länge
+forward_list<char*> wordMap[MAXLEN];
+
+bool unclear = false;
+
+bool tryOpen(const char* name, FILE*& fp) {
+    fp = fopen(name, "r");
+    if (fp == NULL) {
+        error("Error opening '%s'", name);
+        return true;
+    }
+    return false;
+}
+
+uint8_t charNum(char* cp) {
+    static char lc;
+
+    if (*cp >= 'A' && *cp <= 'Z') return *cp - 'A';
+    if (*cp >= 'a' && *cp <= 'z') return *cp - 'a';
+
+    uint8_t sub = 0;           //  Ergebnis-Subtrahent
+    bool isSpec = *cp == *"ü"; // Status: ist Umlaut
+
+    // Umlaute sind nicht in ASCII enthalten, stattdessen bestehen sie aus zwei
+    // ASCII-Zeichen, wobei der erste (hier) bei alles gleich ist
+    if (isSpec || lc == *"ü") {
+        lc = *cp;
+
+        // vergleiche nächstes Zeichen wenn das letzte ein Umlautbeginn war,
+        // sonst das erste
+        switch (cp[isSpec]) {
+            case "ü"[1]:
+            case "Ü"[1]: sub = 2; break;
+            case "ä"[1]:
+            case "Ä"[1]: sub = 3; break;
+            case "ö"[1]:
+            case "Ö"[1]: sub = 4; break;
+            case "ß"[1]: sub = 5; break;
+            default: sub = 0;
+        }
+
+        if (sub && isSpec) sub = 1;
+    }
+    return CHRCNT - sub;
+}
+
+uint16_t cntUml(char* word, uint16_t len = -1) {
+    char* c    = word;
+    uint16_t n = 0, i;
+
+    if (len == -1) {
+        while (*c)
+            if (*c++ == *"ü") n++;
+    } else {
+        for (i = 0; i < len && *c; i++)
+            if (*c++ == *"ü") n++;
+    }
+
+    return n;
+}
+
+void freeWordMap() {
+    uint8_t i;
+    for (i = 0; i < MAXLEN; i++) {
+        wordMap[i].remove_if([](char* word) {
+            free(word);
+            return true;
+        });
+    }
+}
+
+bool initWordMap() {
+    FILE* fp;
+    char* line = NULL;
+    ssize_t read;
+    size_t len = 0;
+
+    if (tryOpen("res/woerterliste.txt", fp)) return true;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        if (read > 1) {
+            if (line[read - 1] == '\n') read--;
+            if (read > MAXLEN) error("word %.*s too long", (int)read, line);
+            wordMap[read - cntUml(line, read)].push_front(strndup(line, read));
+        }
+    }
+    fclose(fp);
+    return false;
+}
+
+int main(int argc, const char* argv[]) {
+    if (initWordMap()) return 1;
+    FILE* fp = NULL;
+    // char* line = NULL;
+    // ssize_t read;
+    // size_t len = 0;
+
+    if (argc > 1) tryOpen(argv[1], fp);
+
+    if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
+        error("initialization failed");
+        fclose(fp);
+        freeWordMap();
+        return 1;
+    }
+
+    // lese Eingabedatei zeilenweise
+    // while ((read = getline(&line, &len, fp)) != -1) {
+
+    char line[MAXLEN];
+    char c, *cp;
+    uint16_t l;
+
+    do {
+        // lese nicht-Wörter
+        cp = line;
+        while ((c = fgetc(fp)) != EOF && charNum(*cp = c) == CHRCNT) cp++;
+        if (c == EOF) break;
+        *cp = 0;
+        printf("%s", line);
+
+        // lese Wörter
+        l = 0;
+        c = line;
+        while ((*c = fgetc(fp)) != EOF && charNum(c) != CHRCNT) c++, l++;
+        if (*c == EOF) break;
+        *c = 0;
+
+        // Keine vertauschten Bst. möglich
+        if (l < 3 || l - cntUml(line, l) <= 3) {
+            printf("\033[0;32m%s\033[0;37m", line);
+            continue;
+
+            // Wort zu lang
+        } else if (l > MAXLEN) {
+            printf("\033[0;31m%s\033[0;37m", line);
+            continue;
+        }
+
+        char p[l], *match = NULL;
+        uint8_t i, j, found = 0;
+
+        // suche Basiswörter
+        for (char* word: wordMap[l - cntUml(line)]) {
+            if ((line[l - 1] != word[l - 1]) ||    // Endbst. verschieden
+                ((line[0] != word[0]) &&           // Anfangsbst. verschieden
+                 (line[0] != word[0] - 'a' + 'A')) // klein->groß
+            )
+                continue;
+
+            // kopiere Eingabewort zu p für Buchstabenzählung
+            strncpy(p, line, l);
+
+            // von 1 - l-1 weil Anfangs- und Endbuchstaben bereits
+            // überprüft worden sind
+            for (i = 1; i < l - 1; i++) {
+                for (j = 1; j < l - 1; j++) {
+                    if (charNum(word + i) == charNum(p + j)) {
+                        p[j] = ' '; // überschreibe gefundene Zeichen
+                        break;
+                    }
+                }
+
+                // Zeichen nicht gefunden
+                if (j == l - 1) break;
+            }
+
+            // alle Zeichen gefunden
+            if (i == l - 1) {
+                if (match) {
+                    // gleiches Wort gefunden -> überspringen
+                    if (!strncmp(match + 1, word + 1, l - 1)) continue;
+
+                    // bereits anderes Wort gefunden -> gelb
+                    printf("\033[0;33m%s\033[0;37m|", line);
+                }
+
+                // kopiere richtiges Wort temporär in Eingabezeile
+                // Anfangs- und Endbuchstabe wird beibehalten
+                strncpy(line + 1, word + 1, l - 2);
+                match = line;
+                found++;
+            }
+        }
+
+        if (found == 1) // eine Übereinstimmung -> grün
+            printf("\033[0;32m%.*s\033[0;37m", l, match);
+        else if (!found) // keine Übereinstimmung -> rot
+            printf("\033[0;31m%.*s\033[0;37m", l, line);
+        else // mehrere Übereinstimmungen -> gelb
+            printf("\033[0;33m%.*s\033[0;37m", l, match);
+
+    } while (*c != EOF);
+
+    printf("\n");
+    fclose(fp);
+    freeWordMap();
+    return 0;
+}

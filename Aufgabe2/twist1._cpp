@@ -3,7 +3,6 @@
  *
  */
 
-// Includes
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +30,6 @@ bool tryOpen(const char* name, FILE*& fp) {
     return false;
 }
 
-// gibt Zeichennummer zurück (nicht Zeichencode)
 uint8_t charNum(char* cp) {
     static char lc;
 
@@ -64,7 +62,6 @@ uint8_t charNum(char* cp) {
     return CHRCNT - sub;
 }
 
-// zählt Umlaute
 uint16_t cntUml(char* word, uint16_t len = -1) {
     char* c    = word;
     uint16_t n = 0, i;
@@ -112,32 +109,13 @@ bool initWordMap() {
 }
 
 int main(int argc, const char* argv[]) {
+    if (initWordMap()) return 1;
     FILE* fp   = NULL;
     char* line = NULL;
-    size_t len = 0;
     ssize_t read;
-    bool chkAlt = false;
+    size_t len = 0;
 
-    // Argumente einlesen
-    for (read = 1; read < argc; read++) {
-        if (!strcmp(argv[read], "--check-alt")) {
-            chkAlt = true;
-
-        } else if (!strcmp(argv[read], "-h") || !strcmp(argv[read], "--help")) {
-            printf(
-                "COMMAND:\n"
-                "\t%s [file] [OPTIONS]\n"
-                "\nOPTIONS:\n"
-                "\t--check-alt     check spelling alternatives (ß->ss, th->t)\n"
-                "\t--help          this help\n",
-                *argv);
-            return 0;
-
-        } else if (!fp)
-            tryOpen(argv[1], fp);
-    }
-
-    if (initWordMap()) return 1;
+    if (argc > 1) tryOpen(argv[1], fp);
 
     if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
         error("initialization failed");
@@ -146,11 +124,25 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
+    /* gibt Anzahl der Wörter einer Wortlänge aus
+    printf(
+        "    a    b    c    d    e    f    g    h    i    j    k    "
+        "l    m    n    o    p    q    r    s    t    u    v    w   "
+        "  x     y     z\n");
+    for (len = 0; len < MAXLEN; len++) {
+        for (read = 0; read < CHRCNT; read++)
+            printf(
+                "%5li",
+                distance(wordMap[len][read].begin(), wordMap[len][read].end()));
+        printf("\n");
+    }
+    printf("\n");*/
+
     // lese Eingabedatei zeilenweise
     while ((read = getline(&line, &len, fp)) != -1) {
         if (read > 1) {
             char *c = line, *b;
-            uint16_t l, corr;
+            uint16_t l;
 
             do {
                 // lese nicht-Wörter
@@ -175,11 +167,9 @@ int main(int argc, const char* argv[]) {
                     continue;
                 }
 
-                char p[l], t[l], *match = NULL;
-                uint8_t i, j, found     = 0;
-                corr = 0;
+                char p[l], *match = NULL;
+                uint8_t i, j, found = 0;
 
-            search:
                 // suche Basiswörter
                 for (char* word: wordMap[l - cntUml(b, l)][charNum(b)]) {
                     if ((b[l - 1] != word[l - 1]) || // Endbst. verschieden
@@ -220,50 +210,6 @@ int main(int argc, const char* argv[]) {
                         strncpy(b + 1, word + 1, l - 2);
                         match = b;
                         found++;
-                    }
-                }
-
-                // teste Schreibalternativen
-                if (chkAlt && !found) {
-                    if (!corr) {
-                        // Temp-Speicher
-                        corr = 1;
-                        strncpy(t, b, l);
-                        strncpy(p, b, l);
-                    }
-
-                    char* f;
-                    uint16_t d;
-
-                    //ß->ss
-                    if ((f = strstr(p, "ß"))) {
-                        d = f - p;
-                        strncpy(b + d, "ss", 2);
-                        goto search;
-                    }
-
-                    // th->t
-                    if ((f = strstr(p, "th"))) {
-                        d = f - p;
-                        strncpy(b + (d + 1), b + (d + 2), l - d - 1);
-                        corr++;
-                        l--;
-                        goto search;
-                    }
-
-                    // Th->T
-                    if ((f = strstr(p, "Th"))) {
-                        d = f - p;
-                        strncpy(b + (d + 1), b + (d + 2), l - d - 1);
-                        corr++;
-                        l--;
-                        goto search;
-                    }
-
-                    // Rückkopieren falls erfolglos
-                    if (corr) {
-                        l += corr - 1;
-                        strncpy(b, t, l);
                     }
                 }
 
