@@ -1,0 +1,198 @@
+\documentclass[a4paper,10pt,ngerman]{scrartcl}
+\usepackage{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+
+% Die nächsten drei Felder bitte anpassen:
+\newcommand{\Name}{Symbroson} % Teamname oder eigenen Namen angeben
+\newcommand{\TeamId}{00165}                       % Team-ID aus dem PMS
+\newcommand{\Aufgabe}{Junior 2: Baywatch} % Aufgabennummer und -name
+
+% Kopf- und Fußzeilen
+\usepackage{scrlayer-scrpage}
+\setkomafont{pageheadfoot}{\textrm}
+\ifoot{\Name}
+\cfoot{\thepage}
+\chead{\Aufgabe}
+\ofoot{Team-ID: \TeamId}
+
+% Für mathematische Befehle und Symbole
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Für Bilder
+\usepackage{graphicx}
+
+% Für Algorithmen
+\usepackage{algpseudocode}
+
+% Für Quelltext
+\usepackage{listings}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{
+    keywordstyle=\color{blue}, commentstyle=\color{mygreen},
+    stringstyle=\color{mymauve}, rulecolor=\color{black},
+    basicstyle=\footnotesize\ttfamily, numberstyle=\tiny\color{mygray},
+    captionpos=b, keepspaces=true, numberfirstline=false,
+    numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
+    showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
+    language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
+    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+}
+
+% Diese beiden Pakete müssen als letztes geladen werden
+\usepackage{hyperref} % Anklickbare Links im Dokument
+\usepackage{cleveref}
+
+\hypersetup{
+    colorlinks,breaklinks,
+    %urlcolor=[rgb]{0,0,1},
+    linkcolor=[rgb]{0,0.1,0.6}
+}
+
+% Daten für die Titelseite
+\title{\Aufgabe}
+\author{\Name\\Team-ID: \TeamId}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Lösungsidee}
+Prinzipiell funktioniert diese Aufgabe wie eine Drehscheibe, bei der die eine Scheibe so gedreht werden muss, dass die gegebenen Symbole des Innenrings mit denen des Äußeren übereinstimmen. Dabei kann man alle nicht gegebenen Symbole vernachlässigen.
+
+\section{Umsetzung}
+
+\subsection{Eingabe}
+Da die Ausgabe hier nicht in Worten erfolgen muss kann man sich das Parsen der Eingabedatei sparen. Ich lese also nur die ersten beiden Zeilen ein und speichere mir die Indizes aller numerischen Zeichen der Longstock-Liste die später verglichen werden sollen in ein Array. Wurden keine gefunden, wird der gesamte folgende Prozess ausgelassen und eine dementsprechende Information ausgegeben.
+
+\subsection{Einnordung}
+Falls doch, wird die George-Liste systematisch nach dem ersten numerischen Zeichen der Longstock-Liste abgesucht und ausgehend von dieser Position das weitere Muster validiert.
+Stimmmen alle numerischen Zeichen der Longstock-Liste mit der George-Liste überein wird die George-Liste von dort aus ausgegeben. Dies wird so lange wiederholt, bis die nächste Suchposition die Länge der Liste(n) überschreitet, um alle möglichen Varianten zu erfassen.
+
+\section{Beispiele}
+\subsection{baywatch1.txt} Hier würde es sich anbieten rückwärts zu suchen, da die Lösung genau bei -1 liegt (wenn man die Longstock-Liste dreht). Das macht aber im allgemeinen Fall keinen Unterschied, da das Ergebnis so oder so in der gleichen Zeitkomplexität gefunden wird - die Reihenfolge oder Drehrichtung spielt also keine Rolle.
+
+\subsection{baywatch2.txt} Je weniger Zeichen gegeben sind desto schneller erfolgt die Ergebnis-Validierung. Jedoch können auch mehr mögliche Ergebnisse gefunden werden.
+
+\subsection{baywatch3.txt} Ein Beispiel für keine gegebenen Landschaftsdaten. Es erfolgt eine dementsprechende Ausgabe.
+
+\subsection{baywatch4.txt} Hier gibt es insgesamt 2 Möglichkeiten: einmal bei +300 und bei +312, die ebenfalls ausgegeben werden.
+
+\subsection{baywatch6.txt} In diesem Fall ist nur eine einziger Landschaftstyp in der Longstock-Liste markiert. Hätte man einen 128-Bit Integer könnte man dies auch durch bitweise Operationen lösen. Allerdings gilt das nur für diesen Fall und ist somit nicht allgemein anwendbar.
+
+\subsection{Sonderfall 1} Ein weiterer Sonderfall wäre der, dass keine Übereinstimmung gefunden wird. Auch dies muss dem Nutzer mitgeteilt werden und der Papagei notfalls eine Ehrenrunde drehen.
+
+\section{Quellcode}
+
+\begin{lstlisting}[frame=single]
+
+/* ... */
+
+char* watch[2];
+uint16_t count, digitcnt, *digits;
+
+/* ... */
+
+bool initBaywatch(FILE* fp) {
+    char* line = NULL;
+    ssize_t read;
+    size_t len = 0;
+
+    // George-Liste einlesen
+    if ((read = getline(&line, &len, fp)) != -1)
+        watch[0] = strndup(line, read - 1);
+    else
+        return true;
+
+    // Longstock-Liste einlesen
+    if ((read = getline(&line, &len, fp)) != -1)
+        watch[1] = strndup(line, read - 1);
+    else {
+        free(line);
+        free(watch[0]);
+        return true;
+    }
+
+    count    = read;
+    digitcnt = 0;
+    digits   = (uint16_t*)malloc(sizeof(uint16_t) * read);
+
+    // speichere zu prüfende Zeichenpositionen
+    for (len = 0; len < count; len++)
+        if (isdigit(watch[1][len])) digits[digitcnt++] = len;
+
+    digits = (uint16_t*)realloc(digits, sizeof(uint16_t) * digitcnt);
+
+    free(line);
+
+    if (!digitcnt) {
+        error("no biome specializations found (only '?'?)");
+        freeBaywatch();
+        return true;
+    }
+    return false;
+}
+
+int main(int argc, const char* argv[]) {
+    FILE* fp = NULL;
+
+    // Input oder Default Datei öffnen
+    if (argc > 1) tryOpen(argv[1], fp);
+    if (fp == NULL && tryOpen("res/baywatch1.txt", fp)) {
+        fclose(fp);
+        return 1;
+    }
+
+    // Datei Einlesen & Parsen
+    if (initBaywatch(fp)) {
+        error("initialization failed");
+        fclose(fp);
+        return 1;
+    }
+
+    uint16_t i, d = 0, n = 0;
+    printf("base:\n%s\n\n", watch[1]);
+
+    do {
+        // Numerischen Buchstaben aus Longstock-Liste suchen
+        while (d < count &&
+               watch[0][(d + *digits) % count] != watch[1][*digits])
+            d++;
+
+        if (d >= count) break;
+
+        // Mustervalidierung
+        for (i = 1; i < digitcnt; i++)
+            if (watch[0][(d + digits[i]) % count] != watch[1][digits[i]]) break;
+
+        // Ausgabe
+        if (i == digitcnt) {
+            n++;
+            printf(
+                "gefunden bei +%3i:\n%s %.*s\n\n", d, watch[0] + d, d,
+                watch[0]);
+        }
+    } while (++d < count);
+
+    // Zusammenfassung
+    if (n)
+        printf("%i  Ergebnis%s gefunden!\n", n, n == 1 ? "" : "se");
+    else
+        error("keine Ergebnisse gefunden!\n");
+
+    freeBaywatch();
+    fclose(fp);
+    return 0;
+}
+\end{lstlisting}
+
+\end{document}
