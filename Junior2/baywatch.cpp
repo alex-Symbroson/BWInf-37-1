@@ -3,32 +3,28 @@
  *
  */
 
-#include <ctype.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Includes
+#include "../base/base.hpp"
 
-#define error(a, ...) \
-    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
+const char* helpStr =
+    "Usage: %s [FILE] \n"
+    "Uses FILE as input (defaults to \"res/baywatch1.txt\")\n"
+    "\nOptions:\n"
+    "  --help        this help\n";
+
+
 
 #define CHRCNT 12
 
+
+
 /*const char* biomes[] = {"Wald",  "Wiese", "Häuser",    "Wüste", "See",
-                        "Sumpf", "Berge", "Flachland", "Weide"};
-*/
+                        "Sumpf", "Berge", "Flachland", "Weide"};*/
 
 char* watch[2];
-uint16_t count, digitcnt, *digits;
+uint count, digitcnt, *digits;
 
-bool tryOpen(const char* name, FILE*& fp) {
-    fp = fopen(name, "r");
-    if (fp == NULL) {
-        error("Error opening '%s'", name);
-        return true;
-    }
-    return false;
-}
+
 
 void freeBaywatch() {
     free(digits);
@@ -58,13 +54,13 @@ bool initBaywatch(FILE* fp) {
 
     count    = read;
     digitcnt = 0;
-    digits   = (uint16_t*)malloc(sizeof(uint16_t) * read);
+    digits   = (uint*)malloc(sizeof(uint) * read);
 
     // speichere zu prüfende Zeichenpositionen
     for (len = 0; len < count; len++)
         if (isdigit(watch[1][len])) digits[digitcnt++] = len;
 
-    digits = (uint16_t*)realloc(digits, sizeof(uint16_t) * digitcnt);
+    digits = (uint*)realloc(digits, sizeof(uint) * digitcnt);
 
     free(line);
 
@@ -76,11 +72,29 @@ bool initBaywatch(FILE* fp) {
     return false;
 }
 
+
+
 int main(int argc, const char* argv[]) {
     FILE* fp = NULL;
+    uint i;
+
+    // Argumente einlesen
+    for (i = 1; i < (uint)argc; i++) {
+        if (!strcmp(argv[i], "--help")) {
+            help(*argv);
+            return 0;
+
+        } else if (*argv[i] == '-') {
+            error("unknown option %s", argv[i]);
+            help(*argv);
+            return 1;
+
+        } else if (!fp) {
+            tryOpen(argv[i], fp);
+        }
+    }
 
     // Input oder Default Datei öffnen
-    if (argc > 1) tryOpen(argv[1], fp);
     if (fp == NULL && tryOpen("res/baywatch1.txt", fp)) {
         fclose(fp);
         return 1;
@@ -93,9 +107,8 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    uint16_t i, d = 0, n = 0;
     printf("base:\n%s\n\n", watch[1]);
-
+    uint d = 0, n = 0;
     do {
         // Numerischen Buchstaben aus Longstock-Liste suchen
         while (d < count &&
@@ -122,6 +135,7 @@ int main(int argc, const char* argv[]) {
         printf("%i  Ergebnis%s gefunden!\n", n, n == 1 ? "" : "se");
     else
         error("keine Ergebnisse gefunden!\n");
+
 
     freeBaywatch();
     fclose(fp);

@@ -1,5 +1,5 @@
 
-SUBDIRS = Junior1 Junior2 Aufgabe1 Aufgabe2
+SUBDIRS = Junior1 Junior2 Aufgabe1 Aufgabe2 Aufgabe4
 
 ifneq ($(ARGS),)
 	OP += ARGS=$(ARGS)
@@ -10,10 +10,13 @@ endif
 all: $(SUBDIRS)
 
 clean:
-	for dir in $(SUBDIRS); do make -C $$dir clean; done
+	for dir in $(SUBDIRS);
+		do make -C $$dir clean;
+	done
 
 $(SUBDIRS):
 	make -C $@ $(OP)
+	@echo
 
 help:
 	# Variables:

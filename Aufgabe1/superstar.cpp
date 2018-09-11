@@ -3,45 +3,42 @@
  *
  */
 
-#include <ctype.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Includes
+#include "../base/base.hpp"
 
 #include <vector>
 
-using namespace std;
+const char* helpStr =
+    "Usage: %s [FILE] [OPTIONS]\n"
+    "Uses FILE as input (defaults to \"res/superstar1.txt\")\n"
+    "\nOptions:\n"
+    "  --help        this help\n";
 
-#define error(a, ...) \
-    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
+
 
 #define FOLLOW_NOP 0 // folgt nicht
 #define FOLLOW_UKN 1 // nicht abgefragt
 #define FOLLOW_YES 2 // folgt
 
+
+
 struct User {
     char* name;            // Name
-    uint16_t id;           // ID = users-Index
+    uint id;               // ID = users-Index
     bool star;             // Status: kann Superstar sein
     vector<User*> follows; // Folgt-Liste
 };
+
+
+
 vector<User> users; // User-Liste
 
-uint16_t count = 0, // gesamt User-Anzahl
-    stars      = 0, // verbleibende Superstars
-    cost       = 0; // entstandene Kosten
+uint count = 0, // gesamt User-Anzahl
+    stars  = 0, // verbleibende Superstars
+    cost   = 0, // entstandene Kosten
+    *follow;    // gespeicherte Abfragen
 
-uint8_t* follow; // gespeicherte Abfragen
 
-bool tryOpen(const char* name, FILE*& fp) {
-    fp = fopen(name, "r");
-    if (fp == NULL) {
-        error("Error opening '%s'", name);
-        return true;
-    }
-    return false;
-}
 
 // sucht User per Namen und gibt einen Zeiger zurück
 User* findUser(char* name) {
@@ -51,14 +48,21 @@ User* findUser(char* name) {
     return NULL;
 }
 
-bool initUsers(FILE* fp) {
+
+
+void freeSuperstar() {
+    for (User& u: users) free(u.name);
+    users.clear();
+}
+
+bool initSuperstar(FILE* fp) {
     char *line = NULL, *pch;
-    ssize_t read;
+    uint read;
     size_t len = 0;
 
     // lese Namenliste
     read = getline(&line, &len, fp);
-    if (read == -1) {
+    if (read == (uint)-1) {
         error("Error reading file");
         return true;
     }
@@ -81,7 +85,7 @@ bool initUsers(FILE* fp) {
 
     // lese Folgebeziehungen
     User* cur = NULL;
-    while ((read = getline(&line, &len, fp)) != -1) {
+    while ((read = getline(&line, &len, fp)) != (uint)-1) {
         if (!(pch = strtok(line, " \n"))) continue;
         if (cur == NULL || strcmp(pch, cur->name)) cur = findUser(pch);
         cur->follows.push_back(findUser(strtok(NULL, " \n")));
@@ -91,14 +95,11 @@ bool initUsers(FILE* fp) {
     return false;
 }
 
-void freeUsers() {
-    for (User& u: users) free(u.name);
-    users.clear();
-}
+
 
 bool follows(User& a, User& b, bool nobrk) {
     printf("%4i %4i%4i ", stars, a.id, b.id);
-    uint8_t* folw = follow + (a.id * count + b.id);
+    uint* folw = follow + (a.id * count + b.id);
 
     switch (follow[a.id * count + b.id]) {
         case FOLLOW_NOP: printf(" nein    * |%c", "\n "[nobrk]); return false;
@@ -131,13 +132,29 @@ bool follows(User& a, User& b, bool nobrk) {
 
 int main(int argc, const char* argv[]) {
     FILE* fp = NULL;
+    uint i;
+
+    // Argumente einlesen
+    for (i = 1; i < (uint)argc; i++) {
+        if (!strcmp(argv[i], "--help")) {
+            help(*argv);
+            return 0;
+
+        } else if (*argv[i] == '-') {
+            error("unknown option %s", argv[i]);
+            help(*argv);
+            return 1;
+
+        } else if (!fp) {
+            tryOpen(argv[i], fp);
+        }
+    }
 
     // Datei öffnen
-    if (argc > 1) tryOpen(argv[1], fp);
-    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) return true;
+    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) return 1;
 
     // Datei einlesen
-    if (initUsers(fp)) {
+    if (initSuperstar(fp)) {
         fclose(fp);
         error("initialization failed");
         return 1;
@@ -147,8 +164,7 @@ int main(int argc, const char* argv[]) {
     for (User& a: users) printf("(%i:%s)", a.id, a.name);
     printf("\n\nstar   U1  U2 folgt Cost |\n");
 
-    uint8_t _follow[count * count];
-    uint16_t i, j;
+    uint j, _follow[count * count];
 
     stars  = count;
     follow = _follow;
@@ -172,6 +188,7 @@ int main(int argc, const char* argv[]) {
         // speichere verbleibenden Star in first
         if (follows(*first, *second, false)) first = second;
     }
+
     printf(
         "\nvermuteter Star: %s\n\nstar   U1  U2 folgt Cost | star   U1  U2 "
         "folgt Cost |\n",
@@ -187,6 +204,7 @@ int main(int argc, const char* argv[]) {
             break;
         }
 
+
     // Ausgabe
     if (stars == 1)
         printf("\n\033[0;32m%s ist der Superstar!\033[0;37m\n", first->name);
@@ -195,10 +213,12 @@ int main(int argc, const char* argv[]) {
             "\n\033[0;33mEs gibt keinen Superstar in dieser "
             "Gruppe.\033[0;37m\n");
 
-    printf("\nPersonen:%4i\nPreis:   %4i€\n", count, cost);
     printf(
+        "\nPersonen:%4i\nPreis:   %4i€\n"
         "\nSchätzung (bei Erfolg):\n Worst:  %4i€\n Best:   %4i€\n",
-        3 * (count - 1), 2 * (count - 1));
-    freeUsers();
+        count, cost, 3 * (count - 1), 2 * (count - 1));
+
+
+    freeSuperstar();
     fclose(fp);
 }

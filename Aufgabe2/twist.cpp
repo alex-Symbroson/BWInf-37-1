@@ -4,41 +4,37 @@
  */
 
 // Includes
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../base/base.hpp"
 
 #include <forward_list>
 
-using namespace std;
+const char* helpStr =
+    "Usage: %s [FILE] [OPTIONS]\n"
+    "Uses FILE as input (defaults to \"res/enttwist.txt\")\n"
+    "\nOptions:\n"
+    "  --check-alt   check spelling alternatives (ß->ss, th->t)\n"
+    "  --help        this help\n";
 
-#define error(a, ...) \
-    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
+
 
 #define MAXLEN 40       // maximale Wortlänge
 #define CHRCNT (26 + 5) // = lowercase + äöüß + 1 for others
 
+
+
 // speichert Wörter sortiert nach Länge
 forward_list<char*> wordMap[MAXLEN][CHRCNT];
 
-bool tryOpen(const char* name, FILE*& fp) {
-    fp = fopen(name, "r");
-    if (fp == NULL) {
-        error("Error opening '%s'", name);
-        return true;
-    }
-    return false;
-}
+
 
 // gibt Zeichennummer zurück (nicht Zeichencode)
-uint8_t charNum(char* cp) {
+uint charNum(char* cp) {
     static char lc;
 
     if (*cp >= 'A' && *cp <= 'Z') return *cp - 'A';
     if (*cp >= 'a' && *cp <= 'z') return *cp - 'a';
 
-    uint8_t sub = 0;           //  Ergebnis-Subtrahent
+    uint sub    = 0;           //  Ergebnis-Subtrahent
     bool isSpec = *cp == *"ü"; // Status: ist Umlaut
 
     // Umlaute sind nicht in ASCII enthalten, stattdessen bestehen sie aus zwei
@@ -65,9 +61,9 @@ uint8_t charNum(char* cp) {
 }
 
 // zählt Umlaute
-uint16_t cntUml(char* word, uint16_t len = -1) {
-    char* c    = word;
-    uint16_t n = 0, i;
+uint cntUml(char* word, int len = -1) {
+    char* c = word;
+    int n   = 0, i;
 
     if (len == -1) {
         while (*c)
@@ -80,8 +76,10 @@ uint16_t cntUml(char* word, uint16_t len = -1) {
     return n;
 }
 
+
+
 void freeWordMap() {
-    uint8_t i, j;
+    uint i, j;
     for (i = 0; i < MAXLEN; i++) {
         for (j = 0; j < CHRCNT; j++) {
             wordMap[i][j].remove_if([](char* word) {
@@ -111,46 +109,51 @@ bool initWordMap() {
     return false;
 }
 
+
+
 int main(int argc, const char* argv[]) {
     FILE* fp   = NULL;
     char* line = NULL;
     size_t len = 0;
-    ssize_t read;
+    uint i, read;
     bool chkAlt = false;
 
     // Argumente einlesen
-    for (read = 1; read < argc; read++) {
-        if (!strcmp(argv[read], "--check-alt")) {
+    for (i = 1; i < (uint)argc; i++) {
+        if (!strcmp(argv[i], "--check-alt")) {
             chkAlt = true;
 
-        } else if (!strcmp(argv[read], "-h") || !strcmp(argv[read], "--help")) {
-            printf(
-                "COMMAND:\n"
-                "\t%s [file] [OPTIONS]\n"
-                "\nOPTIONS:\n"
-                "\t--check-alt     check spelling alternatives (ß->ss, th->t)\n"
-                "\t--help          this help\n",
-                *argv);
+        } else if (!strcmp(argv[i], "--help")) {
+            help(*argv);
             return 0;
 
-        } else if (!fp)
-            tryOpen(argv[1], fp);
-    }
+        } else if (*argv[i] == '-') {
+            error("unknown option %s", argv[i]);
+            help(*argv);
+            return 1;
 
-    if (initWordMap()) return 1;
+        } else if (!fp) {
+            tryOpen(argv[i], fp);
+        }
+    }
 
     if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
         error("initialization failed");
+        fclose(fp);
+        return 1;
+    }
+
+    if (initWordMap()) {
         fclose(fp);
         freeWordMap();
         return 1;
     }
 
     // lese Eingabedatei zeilenweise
-    while ((read = getline(&line, &len, fp)) != -1) {
+    while ((read = getline(&line, &len, fp)) != (uint)-1) {
         if (read > 1) {
             char *c = line, *b;
-            uint16_t l, corr;
+            uint l, corr;
 
             do {
                 // lese nicht-Wörter
@@ -176,7 +179,7 @@ int main(int argc, const char* argv[]) {
                 }
 
                 char p[l], t[l], *match = NULL;
-                uint8_t i, j, found     = 0;
+                uint j, found = 0;
                 corr = 0;
 
             search:
@@ -233,7 +236,7 @@ int main(int argc, const char* argv[]) {
                     }
 
                     char* f;
-                    uint16_t d;
+                    uint d;
 
                     //ß->ss
                     if ((f = strstr(p, "ß"))) {
@@ -278,6 +281,7 @@ int main(int argc, const char* argv[]) {
         } else
             printf("\n");
     }
+
 
     printf("\n");
     fclose(fp);

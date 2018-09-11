@@ -3,29 +3,63 @@
  *
  */
 
-#include <stdint.h>
-#include <stdio.h>
+// Includes
+#include "../base/base.hpp"
+
+const char* helpStr =
+    "Usage: %s [OPTIONS]\n"
+    "Options:\n"
+    "  --start=[i]   define custom start point (default: 0)\n"
+    "  --help        this help\n";
+
+
 
 #define LEDDER_COUNT 12
 #define FIELD_COUNT 100
 #define FIELD(p) fields[p - 1]
 
+
+
 struct Field {
-    bool touched   = false; // Status: Feld betreten
-    uint8_t target = 0;     // ggf. Ziel der Leiter
+    bool touched = false; // Status: Feld betreten
+    uint target  = 0;     // ggf. Ziel der Leiter
 } fields[FIELD_COUNT + 1];
 
+
+
 // Leitern
-uint8_t ledders[LEDDER_COUNT * 2] = {6,  27, 14, 19, 21, 53, 31, 42,
-                                     33, 38, 46, 62, 51, 59, 57, 96,
-                                     65, 85, 68, 80, 70, 76, 92, 98};
+uint ledders[LEDDER_COUNT * 2] = {6,  27, 14, 19, 21, 53, 31, 42,
+                                  33, 38, 46, 62, 51, 59, 57, 96,
+                                  65, 85, 68, 80, 70, 76, 92, 98};
+
+
 
 int main(int argc, const char* argv[]) {
-    uint8_t n, // Würfelzahl
-        p,     // Position
-        i;     // Zähler
+    uint s = 0, // Startposition
+        p,      // Position
+        n,      // Würfelzahl
+        c,      // Wurfanzahl
+        i;      // Zähler
 
-    uint32_t c; // Wurfanzahl
+    // Argumente einlesen
+    for (i = 1; i < (uint)argc; i++) {
+        if (!strncmp(argv[i], "--start", 6)) {
+            if (argv[i][7] != '=' || sscanf(argv[i] + 8, "%i", &s) != 1) {
+                error("invalid syntax %s", argv[i]);
+                help(*argv);
+                return 1;
+            }
+
+        } else if (!strcmp(argv[i], "--help")) {
+            help(*argv);
+            return 0;
+
+        } else if (*argv[i] == '-') {
+            error("unknown option %s", argv[i]);
+            help(*argv);
+            return 1;
+        }
+    }
 
     // Wende Leiterliste an
     for (i = 0; i < LEDDER_COUNT * 2; i += 2) {
@@ -39,7 +73,7 @@ int main(int argc, const char* argv[]) {
 
     // alle Würfelzahlen durchprobieren
     for (n = 1; n <= 6; n++) {
-        p = 1;
+        p = s;
         c = 0;
 
         // resette Felder
