@@ -6,7 +6,7 @@
 // Includes
 #include "../base/base.hpp"
 
-#include <forward_list>
+#include <list>
 
 const char *helpStr =
     "Usage: %s [FILE] [OPTIONS]\n"
@@ -43,7 +43,7 @@ uint minA, minw, maxW, maxH;
 bool debug = false;
 
 // das erste Element einer Gartenliste sind die 'opt' Parameter
-forward_list<forward_list<Rect *>> list;
+list<list<Rect *>> gardenList;
 
 
 
@@ -66,12 +66,12 @@ uint log2(uint v) {
 
 
 void freeSchrebergaerten() {
-    for (auto &gardens: list)
+    for (auto &gardens: gardenList)
         for (Rect *&rect: gardens) delete rect;
 }
 
 bool initSchrebergaerten(FILE *fp) {
-    uint w, h, l, n, dx, dy, minw, maxh;
+    uint w, h, l, c, n, dx, dy, minw, maxh;
     char line[1024], *lp;
     bool read = false;
 
@@ -81,13 +81,13 @@ bool initSchrebergaerten(FILE *fp) {
         if (read) {
             lp = line;
             n = minw = maxh = dx = dy = 0;
-            list.push_front({});
+            gardenList.push_back({});
 
             // scannt Zeile nach [w] x [h] Paar
             while (*lp && (l = sscanf(lp, " %u x %u", &w, &h)) != (uint)EOF) {
                 // Speichert Garten
                 if (l == 2) {
-                    list.front().push_front(new Rect(0, 0, w, h, n++));
+                    gardenList.back().push_back(new Rect(0, 0, w, h, n++));
                     dx = dx ? ggt(dx, w) : w;
                     dy = dy ? ggt(dy, h) : h;
                 }
@@ -96,14 +96,14 @@ bool initSchrebergaerten(FILE *fp) {
                 while (*lp)
                     if (*lp++ == ',') break;
             }
-            list.front().push_front(new Rect(dx, dy, minw, maxh, n));
-            read = false;
+            gardenList.back().push_back(new Rect(dx, dy, minw, maxh, n));
+            gardenList.back().front()->x = c;
             dx = dy = 0;
+            read    = false;
 
             // scannt Zeile nach "[n].\n" index
-        } else if (sscanf(line, "%u.\n", &l) == 1) {
-            read = true;
-        }
+        } else
+            read = sscanf(line, "%u.\n", &c) == 1;
     }
 
     return false;
@@ -258,11 +258,11 @@ int main(int argc, const char *argv[]) {
     }
     fclose(fp);
 
-    for (auto &gardens: list) {
+    for (auto &gardens: gardenList) {
         i = 0;
 
-        opt = gardens.front();
-        gardens.pop_front();
+        opt = gardens.back();
+        gardens.pop_back();
 
         // wende ggT an
         opt->w /= opt->x;
@@ -287,7 +287,7 @@ int main(int argc, const char *argv[]) {
             if (minw < rect->w) minw = rect->w;
         }
 
-        printf("------------------------\n");
+        printf("\n-- %i: ---------------------\n", garden[0]->x);
         // teste alle Permutationen
         order = _order;
         permut(garden, opt->i - 1);
@@ -310,14 +310,10 @@ int main(int argc, const char *argv[]) {
 
         for (y = 0; y < maxH; y++) {
             for (x = 0; x < maxW; x++) {
-                if (out[y][x] > 10) {
-                    printf("\033[30;%um%u", out[y][x] % 9 + 99, out[y][x]);
-                } else if (out[y][x]) {
-                    printf(
-                        "\033[30;%um%u%u", out[y][x] % 9 + 99, out[y][x],
-                        out[y][x]);
+                if (out[y][x]) {
+                    printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
                 } else
-                    printf("\033[0;90m00");
+                    printf("\033[0;90m 0");
             }
             printf("\033[0;37m\n");
         }

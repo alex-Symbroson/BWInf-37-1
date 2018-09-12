@@ -2,6 +2,9 @@ Zu dieser Aufgabe gibt es drei Beispiele von Schrebergärten (jeder
 Garten mit Länge x Breite), wobei das erste dem Beispiel in der
 Aufgabenstellung entspricht:
 
+0.
+15 x 25, 30 x 15, 20 x 25, 25 x 15.
+
 1.
 25 x 15, 30 x 15, 25 x 20, 25 x 15.
 
