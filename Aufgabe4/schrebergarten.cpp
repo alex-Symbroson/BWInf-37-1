@@ -39,7 +39,12 @@ Rect *opt,
     // order: enthält Zeiger auf Gärten in optimaler Reihenfolge
     **order;
 
-uint minA, minw, maxW, maxH;
+// Rechteck:
+uint minA, // Minimalfläche
+    minw,  // Minimalbreite
+    maxW,  // Breite
+    maxH;  // Höhe
+
 bool debug = false;
 
 // das erste Element einer Gartenliste sind die 'opt' Parameter
@@ -55,12 +60,6 @@ uint ggt(uint x, uint y) {
         y = c;
     }
     return x;
-}
-
-uint log2(uint v) {
-    int n = -1;
-    while (v) v >>= 1, n++;
-    return n;
 }
 
 
@@ -101,16 +100,20 @@ bool initSchrebergaerten(FILE *fp) {
             dx = dy = 0;
             read    = false;
 
-            // scannt Zeile nach "[n].\n" index
-        } else
-            read = sscanf(line, "%u.\n", &c) == 1;
+            // prüfe Zeile auf "[n].\n" ([n] -> index)
+        } else {
+            c  = 0;
+            lp = line;
+            while (isdigit(*lp)) c = 10 * c + *lp++ - '0';
+            read = lp[0] == '.' && lp[1] == '\n';
+        }
     }
 
     return false;
 }
 
 void testGardens(Rect **gds) {
-    uint i, j, lx = 0, n = 2 + log2(opt->i), maxw = 0, maxy = 0;
+    uint i, j, lx = 0, n = 1 + opt->i, maxw = 0, maxy = 0;
 
     while (--n) {
         maxw = 0;
@@ -118,7 +121,6 @@ void testGardens(Rect **gds) {
         //  maxw berechnen
         for (i = 0; i < n; i++) maxw += gds[i]->w;
         if (maxw < minw) maxw = minw;
-        // printf("(%u,%u),", n,  maxw);
 
         // Positionen resetten
         for (i = 0; i < opt->i; i++) {
@@ -130,12 +132,6 @@ void testGardens(Rect **gds) {
             bool coll;
             do {
                 coll = false;
-
-                /*if (lx + gds[i]->x + gds[i]->w >  maxw) {
-                    gds[i]->x = 0;
-                    gds[i]->y++;
-                } else
-                    gds[i]->x = lx;*/
 
                 for (j = 0; j < i; j++) {
                     if ((gds[i]->x < gds[j]->x + gds[j]->w) &&
@@ -259,7 +255,7 @@ int main(int argc, const char *argv[]) {
     fclose(fp);
 
     for (auto &gardens: gardenList) {
-        i = 0;
+        minw = i = 0;
 
         opt = gardens.back();
         gardens.pop_back();
