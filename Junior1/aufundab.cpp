@@ -43,8 +43,8 @@ int main(int argc, const char* argv[]) {
 
     // Argumente einlesen
     for (i = 1; i < (uint)argc; i++) {
-        if (!strncmp(argv[i], "--start", 6)) {
-            if (argv[i][7] != '=' || sscanf(argv[i] + 8, "%i", &s) != 1) {
+        if (!strncmp(argv[i], "--start=", 8)) {
+            if (sscanf(argv[i] + 8, "%i", &s) != 1) {
                 error("invalid syntax %s", argv[i]);
                 help(*argv);
                 return 1;

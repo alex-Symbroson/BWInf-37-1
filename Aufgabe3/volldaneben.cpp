@@ -14,10 +14,16 @@ const char *helpStr =
     "Usage: %s [FILE] [OPTIONS]\n"
     "Uses FILE as input (defaults to \"res/superstar1.txt\")\n"
     "\nOptions:\n"
-    "  --help        this help\n";
+    "  --debug        show profit by each player\n"
+    "  --random=[n]   generates n random player values"
+    "instead of the input file\n"
+    "  --help         this help\n";
+
 
 
 forward_list<uint> player, tips;
+
+
 
 void freeVolldaneben() {}
 
@@ -32,13 +38,25 @@ bool initVolldaneben(FILE *fp) {
 }
 
 
+
 int main(int argc, const char *argv[]) {
-    FILE *fp = NULL;
-    uint i;
+    FILE *fp   = NULL;
+    bool debug = false;
+    uint i, random = 0;
 
     // Argumente einlesen
     for (i = 1; i < (uint)argc; i++) {
-        if (!strcmp(argv[i], "--help")) {
+        if (!strncmp(argv[i], "--random=", 9)) {
+            if (sscanf(argv[i] + 9, "%i", &random) != 1) {
+                error("invalid syntax %s", argv[i]);
+                help(*argv);
+                return 1;
+            }
+
+        } else if (!strcmp(argv[i], "--debug")) {
+            debug = true;
+
+        } else if (!strcmp(argv[i], "--help")) {
             help(*argv);
             return 0;
 
@@ -52,14 +70,24 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    // Datei öffnen
-    if (fp == NULL && tryOpen("res/beispiel1.txt", fp)) return 1;
+    if (random) {
+        // initialisiere Zufallsgenerator
+        srand(time(NULL) + clock());
 
-    // Datei einlesen
-    if (initVolldaneben(fp)) {
+        // generiere Zufallszahlen
+        for (i = 0; i < random; i++) player.push_front(1 + rand() % 1000);
+
+    } else {
+        // Datei öffnen
+        if (fp == NULL && tryOpen("res/beispiel1.txt", fp)) return 1;
+
+        // Datei einlesen
+        if (initVolldaneben(fp)) {
+            fclose(fp);
+            error("initialization failed");
+            return 1;
+        }
         fclose(fp);
-        error("initialization failed");
-        return 1;
     }
 
 
@@ -70,35 +98,41 @@ int main(int argc, const char *argv[]) {
     // initialisiere Zufallsgenerator
     srand(time(NULL) + clock());
 
-    printf("tips: ");
+    // 'berechne' Al's Tipp-Zahlen
+    printf("\033[1;37mtips: ");
     for (i = 0; i < 10; i++) {
-        tips.push_front(50 + 100 * i + rand() % 10);
+        tips.push_front(50 + 100 * i + rand() % 11);
         printf("%i ", tips.front());
     }
 
-
-    printf("\nplayer:\n");
-    n   = 0;
-    sum = 0;
+    // Berechne Gewinn
+    printf("\033[0;37m\nplayer: ");
+    n = sum = 0;
     for (uint &a: player) {
         n++;
+
+        // finde Mindestabstand
         dmin = -1;
         for (uint &b: tips) {
             d = b < a ? a - b : b - a;
-            if (dmin == (uint)-1)
-                dmin = d;
-            else if (d < dmin)
-                dmin = d;
+            if (dmin == (uint)-1 || d < dmin) dmin = d;
         }
+
         sum += 25 - dmin;
-        printf(
-            "(%5i,\033[0;3%cm%5i\033[0;37m)\t", a,
-            "231"[1 + (dmin > 25) - (dmin < 25)], 25 - dmin);
+
+        // Spielerwert und mit --debug Differenz ausgeben
+        if (debug) {
+            printf(
+                "(%5i,\033[0;3%cm%5i\033[0;37m)\t", a,
+                "231"[1 + (dmin > 25) - (dmin < 25)], 25 - dmin);
+        } else
+            printf("%i ", a);
     }
 
-    printf("\nsum: %i\n", sum);
+    // Gesamtgewinn
+    printf(
+        "\n\033[1;3%cmsum: %i\033[0;37m\n", "231"[1 + (sum < 0) - (sum > 0)],
+        sum);
 
-    tips.clear();
     freeVolldaneben();
-    fclose(fp);
 }
