@@ -67,132 +67,307 @@
 \tableofcontents
 
 \section{Lösungsidee}
-Prinzipiell funktioniert diese Aufgabe wie eine Drehscheibe, bei der die eine Scheibe so gedreht werden muss, dass die gegebenen Symbole des Innenrings mit denen des Äußeren übereinstimmen. Dabei kann man alle nicht gegebenen Symbole vernachlässigen.
+Ziel ist es, jedes Rechteck möglichst optimal in ein größeres einzuordnen. Da jedes Rechteck möglichst wenig Platz zu seinem Nachbarn haben soll, kann man damit anfangen, jedes Reckteck der Reihe nach neben das Vorherige zu platzieren.
+
+Im zweiten Schritt limitiert man die Breite des Rechtecks um einen Garten und sortiert so lange Gärten ein, bis die Breite des Rechtecks von einem Garten überschritten wird. Dann muss dieser Garten auf der Y-Achse verschoben und von vorn alle X-Werte ausprobiert werden. Man muss nun auch darauf achten, dass sich der Garten nicht mit anderen Gärten überschneidet.
+
+Sind alle Gärten eingeordnet, wird jeweils die Fläche des entstandenen Rechteckes berechnet und ggf. das Minimum überschrieben.
+
+Wiederholt wird das Ganze solange, bis das Reckteck so breit wie der breiteste Garten ist, denn schmaler kann das Rechteck nicht sein.
+
+Dies allein reicht aber micht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt.
+
+Es werden also alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
 
 \section{Umsetzung}
+Jeder Garten besitzt Imformationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Darstellung wieder als Klasse mit genannten Eigenschaften.
 
-\subsection{Eingabe}
-Da die Ausgabe hier nicht in Worten erfolgen muss kann man sich das Parsen der Eingabedatei sparen. Ich lese also nur die ersten beiden Zeilen ein und speichere mir die Indizes aller numerischen Zeichen der Longstock-Liste die später verglichen werden sollen in ein Array. Wurden keine gefunden, wird der gesamte folgende Prozess ausgelassen und eine dementsprechende Information ausgegeben.
+Um während des gesamten Einsortierungssprozesses Zeit zu sparen, wird bereits während dem Einlesen der Gartenlisten der ggT von Höhe und Breite einer Gartenliste berechnet (da das Assoziativgesetz beim ggT gilt, einfach umzusetzen.) um dann alle Höhen und Breiten durch diese teilen zu können.
 
-\subsection{Einnordung}
-Falls doch, wird die George-Liste systematisch nach dem ersten numerischen Zeichen der Longstock-Liste abgesucht und ausgehend von dieser Position das weitere Muster validiert.
-Stimmmen alle numerischen Zeichen der Longstock-Liste mit der George-Liste überein wird die George-Liste von dort aus ausgegeben. Dies wird so lange wiederholt, bis die nächste Suchposition die Länge der Liste(n) überschreitet, um alle möglichen Varianten zu erfassen.
+Bei der Permutation erfolgt der Tausch und erneute Permutation der verbleibenden Elemente nur, falls die Größe der Gärten sich unterscheidet. Dadurch kann eine erhebliche Menge an zu testenden Permutationen eingespart werden, je mehr Gärten und je mehr gleiche es gibt.
 
-\section{Beispiele}
-\subsection{baywatch1.txt} Hier würde es sich anbieten rückwärts zu suchen, da die Lösung genau bei -1 liegt (wenn man die Longstock-Liste dreht). Das macht aber im allgemeinen Fall keinen Unterschied, da das Ergebnis so oder so in der gleichen Zeitkomplexität gefunden wird - die Reihenfolge oder Drehrichtung spielt also keine Rolle.
+Die Prüfung der Gartenpermutationen erfolgt wie bereits in der Lösungsidee beschrieben.
+Die Gärten werden nacheinander in das Rechteck eingefügt und solange in X und Y-Richtung bewegt, bis sie weder überstehen noch mit einem anderen Garten kollidieren. Die Höhe des Rechtecks entspricht der höchsten Y-Koordinate (+Höhe) eines Gartens, da ja die Breite für jeden Durchlauf fest definiert ist.
 
-\subsection{baywatch2.txt} Je weniger Zeichen gegeben sind desto schneller erfolgt die Ergebnis-Validierung. Jedoch können auch mehr mögliche Ergebnisse gefunden werden.
+Wurde ein geringerer Flächeninhalt als zuvor gefunden werden die Garteneigenschaften in der aktuellen Reihenfolge in eine extra Liste kopiert, um diese später an der richtigen Position ausgeben zu können.
 
-\subsection{baywatch3.txt} Ein Beispiel für keine gegebenen Landschaftsdaten. Es erfolgt eine dementsprechende Ausgabe.
+Falls der debug-Modus eingeschaltet ist, werden alle möglichen Gartenkonstellationen ausgegeben. Dabei muss beachtet werden, dass diese ebenfalls durch die ggT's geschrumpft wurden und die Seitenverhältnisse möglicherweise nicht mehr stimmen, falls sich die ggT's unterscheiden.
 
-\subsection{baywatch4.txt} Hier gibt es insgesamt 2 Möglichkeiten: einmal bei +300 und bei +312, die ebenfalls ausgegeben werden.
+\section[Beispiele]{Beispiele - schrebergaerten.txt}
 
-\subsection{baywatch6.txt} In diesem Fall ist nur eine einziger Landschaftstyp in der Longstock-Liste markiert. Hätte man einen 128-Bit Integer könnte man dies auch durch bitweise Operationen lösen. Allerdings gilt das nur für diesen Fall und ist somit nicht allgemein anwendbar.
-
-\subsection{Sonderfall 1} Ein weiterer Sonderfall wäre der, dass keine Übereinstimmung gefunden wird. Auch dies muss dem Nutzer mitgeteilt werden und der Papagei notfalls eine Ehrenrunde drehen.
+\subsection[Sonderfall 1]{Sonderfall 1 - Liste 4.}
+Es kann durchaus sein, dass alle Gärten die gleiche Höhe oder Breite haben. Dadurch ist die optimale Anordnung in W-O bzw N-S Richtung. Das ist auch der Grund, warum man bei der maximalen Breite des Rechtecks keine Abstriche machen darf.
 
 \section{Quellcode}
 
 \begin{lstlisting}[frame=single]
 
+// Includes
 /* ... */
 
-char* watch[2];
-uint16_t count, digitcnt, *digits;
+struct Rect {
+    uint x, y, w, h, i;
 
-/* ... */
+    /* ... */
+};
 
-bool initBaywatch(FILE* fp) {
-    char* line = NULL;
-    ssize_t read;
-    size_t len = 0;
+// enthält {ggT(w1, .., wn), ggT(h1, .., hn), minw, i, n} einer Gartenliste
+Rect *opt,
+    // enthält Zeiger auf Gärten in optimaler Reihenfolge
+    **order;
 
-    // George-Liste einlesen
-    if ((read = getline(&line, &len, fp)) != -1)
-        watch[0] = strndup(line, read - 1);
-    else
-        return true;
+// Rechteck:
+uint minA, // Minimalfläche
+    minw,  // Minimalbreite
+    maxW,  // Breite
+    maxH;  // Höhe
 
-    // Longstock-Liste einlesen
-    if ((read = getline(&line, &len, fp)) != -1)
-        watch[1] = strndup(line, read - 1);
-    else {
-        free(line);
-        free(watch[0]);
-        return true;
+bool debug = false;
+
+// das erste Element einer Gartenliste sind die 'opt' Parameter
+list<list<Rect *>> gardenList;
+
+
+uint ggt(uint x, uint y) {
+    /* ...*/
+}
+
+void freeSchrebergaerten() {
+    /* ... */
+}
+
+bool initSchrebergaerten(FILE *fp) {
+    uint w, h, l, c, n, dx, dy, minw;
+    char line[1024], *lp;
+    bool read = false;
+
+    // Erwartet Daten im Format "[n].\n[w1] x [h1], ..., [wn] x [hn]."
+    while (fgets(line, 1024, fp) != NULL) {
+        // lese Gartenliste wenn zuvor Listennummer gefunden ("[n].\n")
+        if (read) {
+            lp = line;
+            n = minw = dx = dy = 0;
+            gardenList.push_back({});
+
+            // scannt Zeile nach [w] x [h] Paar
+            while (*lp && (l = sscanf(lp, " %u x %u", &w, &h)) != (uint)EOF) {
+                // Speichert Garten
+                if (l == 2) {
+                    gardenList.back().push_back(new Rect(0, 0, w, h, n++));
+                    // berechnet ggT (Assoziativgesetz gilt)
+                    dx = dx ? ggt(dx, w) : w;
+                    dy = dy ? ggt(dy, h) : h;
+                }
+
+                // gehe zu nächstem Garten oder Zeilenende
+                while (*lp)
+                    if (*lp++ == ',') break;
+            }
+
+            // speichere zusätzliche Gartenlisteninformationen
+            // (ggt(w), ggt(h), minw, maxh, n)
+            gardenList.back().push_back(new Rect(dx, dy, minw, c, n));
+            dx = dy = 0;
+            read    = false;
+
+            // prüfe Zeile auf "[n].\n" ([n] -> index)
+        } else {
+            c  = 0;
+            lp = line;
+            while (isdigit(*lp)) c = 10 * c + *lp++ - '0';
+            read = lp[0] == '.' && lp[1] == '\n';
+        }
     }
 
-    count    = read;
-    digitcnt = 0;
-    digits   = (uint16_t*)malloc(sizeof(uint16_t) * read);
-
-    // speichere zu prüfende Zeichenpositionen
-    for (len = 0; len < count; len++)
-        if (isdigit(watch[1][len])) digits[digitcnt++] = len;
-
-    digits = (uint16_t*)realloc(digits, sizeof(uint16_t) * digitcnt);
-
-    free(line);
-
-    if (!digitcnt) {
-        error("no biome specializations found (only '?'?)");
-        freeBaywatch();
-        return true;
-    }
     return false;
 }
 
-int main(int argc, const char* argv[]) {
-    FILE* fp = NULL;
+// Ausgabe
+void printGardens(Rect **list, uint w, uint h) {
+    uint x, y, i, out[h][w];
+    for (y = 0; y < h; y++)
+        for (x = 0; x < w; x++) out[y][x] = 0;
 
-    // Input oder Default Datei öffnen
-    if (argc > 1) tryOpen(argv[1], fp);
-    if (fp == NULL && tryOpen("res/baywatch1.txt", fp)) {
-        fclose(fp);
-        return 1;
+    for (i = 0; i < opt->i; i++)
+        for (y = 0; y < list[i]->h; y++)
+            for (x = 0; x < list[i]->w; x++)
+                out[list[i]->y + y][list[i]->x + x] = list[i]->i + 1;
+
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (out[y][x]) {
+                printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
+            } else
+                printf("\033[0;90m 0");
+        }
+        printf("\033[0;37m\n");
     }
+    printf("\n");
+}
+
+void testGardens(Rect **gds) {
+    uint i, j,          // Zähler
+        n = 1 + opt->i, // ersten n Rechtecke ergeben Maximalbreite
+        maxw,           // Macimalbreite des Rechtecks
+        maxy = 0;       // höchster Y-Wert
+
+    while (--n) {
+        maxw = 0;
+
+        //  maxw berechnen
+        for (i = 0; i < n; i++) maxw += gds[i]->w;
+        if (maxw < minw) maxw = minw;
+
+        // Positionen resetten
+        for (i = 0; i < opt->i; i++) {
+            gds[i]->x = 0;
+            gds[i]->y = 0;
+        }
+
+        // Alle Gärten einsortieren
+        for (i = 0; i < opt->i; i++) {
+            bool coll;
+
+            do {
+                coll = false;
+
+                // Überschneidung mit anderem Garten?
+                for (j = 0; j < i; j++) {
+                    if ((gds[i]->x < gds[j]->x + gds[j]->w) &&
+                        (gds[i]->y < gds[j]->y + gds[j]->h) &&
+                        (gds[i]->y + gds[i]->h > gds[j]->y) &&
+                        (gds[i]->x + gds[i]->w > gds[j]->x)) {
+                        // akt. Garten hinter gefundenen Garten bewegen
+                        gds[i]->x = gds[j]->x + gds[j]->w;
+
+                        // Rechteckbreite überschritten
+                        if (gds[i]->x + gds[i]->w > maxw) {
+                            gds[i]->x = 0;
+                            gds[i]->y++;
+                        }
+                        coll = true;
+                        break;
+                    }
+                }
+            } while (coll);
+
+            if (gds[i]->y + gds[i]->h > maxy) maxy = gds[i]->y + gds[i]->h;
+        }
+
+        // neues minimum der Rechteckfläche gefunden
+        if (!minA || (maxy * maxw != 0 && maxy * maxw < minA)) {
+            minA = maxy * maxw;
+            maxW = maxw;
+            maxH = maxy;
+            // alle Garteneigenschaften für Ausgabe kopieren
+            for (i = 0; i < opt->i; i++) order[i]->assign(gds[i]);
+        }
+
+        if (debug) printGardens(gds, maxw, maxy);
+    }
+}
+
+
+inline void swap(Rect **list, uint a, uint b) {
+    /* ... */
+}
+
+// Permutation
+void permut(Rect **r, uint end) {
+    if (end == 0) {
+        testGardens(r);
+    } else {
+        permut(r, end - 1);
+        uint i;
+
+        for (i = 0; i < end; i++) {
+            // nicht tauschen und permutieren wenn Größe übereinstimmt
+            if (r[i]->w != r[end]->w || r[i]->h != r[end]->h) {
+                swap(r, i, end);
+                permut(r, end - 1);
+                swap(r, i, end);
+            }
+        }
+    }
+}
+
+
+int main(int argc, const char *argv[]) {
+    FILE *fp = NULL;
+    uint i;
+
+    // Argumente einlesen
+    /* ... */
+
+    // Default Datei öffnen falls nötig
+    if (fp == NULL && tryOpen("res/schrebergaerten.txt", fp)) goto error;
 
     // Datei Einlesen & Parsen
-    if (initBaywatch(fp)) {
+    if (initSchrebergaerten(fp)) {
         error("initialization failed");
-        fclose(fp);
-        return 1;
+        goto error;
     }
+    fclose(fp);
 
-    uint16_t i, d = 0, n = 0;
-    printf("base:\n%s\n\n", watch[1]);
+    // jede Gartenliste aus Eingabedatei behandeln
+    for (auto &gardens: gardenList) {
+        minw = i = 0;
 
-    do {
-        // Numerischen Buchstaben aus Longstock-Liste suchen
-        while (d < count &&
-               watch[0][(d + *digits) % count] != watch[1][*digits])
-            d++;
+        // lese Gartenlisteninformationen
+        opt = gardens.back();
+        gardens.pop_back();
 
-        if (d >= count) break;
+        printf("\n-- %i: ---------------------\n", opt->h);
 
-        // Mustervalidierung
-        for (i = 1; i < digitcnt; i++)
-            if (watch[0][(d + digits[i]) % count] != watch[1][digits[i]]) break;
+        // wende ggT an
+        opt->w /= opt->x;
+
+        // besetze Speicher
+        Rect *garden[opt->i], // random-access Gartenliste
+            *_order[opt->i];  // für Kopie der besten Reihenfolge
+        order = _order;
+
+        // resette minimale Fläche
+        minA = 0;
+
+        // Vorberechnungen
+        for (Rect *&rect: gardens) {
+            // Speichere Zeiger auf Gärten in Array
+            garden[i++] = rect;
+
+            // wende ggT an
+            rect->w /= opt->x;
+            rect->h /= opt->y;
+
+            // berechne minimale Rechteck-Breite
+            if (minw < rect->w) minw = rect->w;
+
+            // erstelle Zeiger auf Garten in order-Liste
+            *order++ = new Rect(0, 0, 0, 0, i);
+        }
+
+        // teste alle Garten-Permutationen
+        order = _order;
+        permut(garden, opt->i - 1);
 
         // Ausgabe
-        if (i == digitcnt) {
-            n++;
-            printf(
-                "gefunden bei +%3i:\n%s %.*s\n\n", d, watch[0] + d, d,
-                watch[0]);
-        }
-    } while (++d < count);
+        printf(
+            "min: %u x %u = %u\n", maxW * opt->x, maxH * opt->y,
+            minA * opt->x * opt->y);
 
-    // Zusammenfassung
-    if (n)
-        printf("%i  Ergebnis%s gefunden!\n", n, n == 1 ? "" : "se");
-    else
-        error("keine Ergebnisse gefunden!\n");
+        printGardens(order, maxW, maxH);
 
-    freeBaywatch();
-    fclose(fp);
+        for (i = 0; i < opt->i; i++) delete order[i];
+    }
+
+    freeSchrebergaerten();
     return 0;
+
+error:
+    fclose(fp);
+    return 1;
 }
+
 \end{lstlisting}
 
 \end{document}

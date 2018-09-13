@@ -34,7 +34,7 @@ struct Rect {
 
 
 
-// enthält {ggT(w1, .., wn), ggT(h1, .., hn), minw, maxh, n} einer Gartenliste
+// enthält {ggT(w1, .., wn), ggT(h1, .., hn), minw, i, n} einer Gartenliste
 Rect *opt,
     // order: enthält Zeiger auf Gärten in optimaler Reihenfolge
     **order;
@@ -70,16 +70,16 @@ void freeSchrebergaerten() {
 }
 
 bool initSchrebergaerten(FILE *fp) {
-    uint w, h, l, c, n, dx, dy, minw, maxh;
+    uint w, h, l, c, n, dx, dy, minw;
     char line[1024], *lp;
     bool read = false;
 
-    // expects data in format "[n].\n[w1] x [h1], ..., [wn] x [hn]."
-
+    // Erwartet Daten im Format "[n].\n[w1] x [h1], ..., [wn] x [hn]."
     while (fgets(line, 1024, fp) != NULL) {
+        // lese Gartenliste wenn zuvor Listennummer gefunden ("[n].\n")
         if (read) {
             lp = line;
-            n = minw = maxh = dx = dy = 0;
+            n = minw = dx = dy = 0;
             gardenList.push_back({});
 
             // scannt Zeile nach [w] x [h] Paar
@@ -87,6 +87,7 @@ bool initSchrebergaerten(FILE *fp) {
                 // Speichert Garten
                 if (l == 2) {
                     gardenList.back().push_back(new Rect(0, 0, w, h, n++));
+                    // berechnet ggT (Assoziativgesetz gilt)
                     dx = dx ? ggt(dx, w) : w;
                     dy = dy ? ggt(dy, h) : h;
                 }
@@ -95,8 +96,10 @@ bool initSchrebergaerten(FILE *fp) {
                 while (*lp)
                     if (*lp++ == ',') break;
             }
-            gardenList.back().push_back(new Rect(dx, dy, minw, maxh, n));
-            gardenList.back().front()->x = c;
+
+            // speichere zusätzliche Gartenlisteninformationen
+            // (ggt(w), ggt(h), minw, maxh, n)
+            gardenList.back().push_back(new Rect(dx, dy, minw, c, n));
             dx = dy = 0;
             read    = false;
 
@@ -112,8 +115,37 @@ bool initSchrebergaerten(FILE *fp) {
     return false;
 }
 
+
+
+// Ausgabe
+void printGardens(Rect **list, uint w, uint h) {
+    uint x, y, i, out[h][w];
+    for (y = 0; y < h; y++)
+        for (x = 0; x < w; x++) out[y][x] = 0;
+
+    for (i = 0; i < opt->i; i++)
+        for (y = 0; y < list[i]->h; y++)
+            for (x = 0; x < list[i]->w; x++)
+                out[list[i]->y + y][list[i]->x + x] = list[i]->i + 1;
+
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (out[y][x]) {
+                printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
+            } else
+                printf("\033[0;90m 0");
+        }
+        printf("\033[0;37m\n");
+    }
+    printf("\n");
+}
+
+// Sortiert Gartenpermutation in Rechteck
 void testGardens(Rect **gds) {
-    uint i, j, lx = 0, n = 1 + opt->i, maxw = 0, maxy = 0;
+    uint i, j,          // Zähler
+        n = 1 + opt->i, // ersten n Rechtecke ergeben Maximalbreite
+        maxw,           // Macimalbreite des Rechtecks
+        maxy = 0;       // höchster Y-Wert
 
     while (--n) {
         maxw = 0;
@@ -128,81 +160,58 @@ void testGardens(Rect **gds) {
             gds[i]->y = 0;
         }
 
+        // Alle Gärten einsortieren
         for (i = 0; i < opt->i; i++) {
             bool coll;
+
             do {
                 coll = false;
 
+                // Überschneidung mit anderem Garten?
                 for (j = 0; j < i; j++) {
                     if ((gds[i]->x < gds[j]->x + gds[j]->w) &&
                         (gds[i]->y < gds[j]->y + gds[j]->h) &&
                         (gds[i]->y + gds[i]->h > gds[j]->y) &&
                         (gds[i]->x + gds[i]->w > gds[j]->x)) {
+                        // akt. Garten hinter gefundenen Garten bewegen
                         gds[i]->x = gds[j]->x + gds[j]->w;
 
-                        if (lx + gds[i]->x + gds[i]->w > maxw) {
+                        // Rechteckbreite überschritten
+                        if (gds[i]->x + gds[i]->w > maxw) {
                             gds[i]->x = 0;
                             gds[i]->y++;
                         }
                         coll = true;
-                        continue;
+                        break;
                     }
                 }
             } while (coll);
 
             if (gds[i]->y + gds[i]->h > maxy) maxy = gds[i]->y + gds[i]->h;
-            // lx = gds[i]->x + gds[i]->w;
         }
 
+        // neues minimum der Rechteckfläche gefunden
         if (!minA || (maxy * maxw != 0 && maxy * maxw < minA)) {
             minA = maxy * maxw;
             maxW = maxw;
             maxH = maxy;
-            for (i = 0; i < opt->i; i++) {
-                // memcpy(order + i, gds[i], sizeof(Rect));
-                order[i]->assign(gds[i]);
-            }
+            // alle Garteneigenschaften für Ausgabe kopieren
+            for (i = 0; i < opt->i; i++) order[i]->assign(gds[i]);
         }
 
-        //* output
-        if (debug) {
-            uint x, y, k, out[maxy][maxw];
-            for (y = 0; y < maxy; y++)
-                for (x = 0; x < maxw; x++) out[y][x] = 0;
-
-            for (k = 0; k < opt->i; k++) {
-                for (y = 0; y < gds[k]->h; y++)
-                    for (x = 0; x < gds[k]->w; x++)
-                        out[gds[k]->y + y][gds[k]->x + x] = gds[k]->i + 1;
-            }
-
-            for (y = 0; y < maxy; y++) {
-                for (x = 0; x < maxw; x++) {
-                    if (out[y][x] > 10) {
-                        printf("\033[30;%um%u", out[y][x] % 9 + 99, out[y][x]);
-                    } else if (out[y][x]) {
-                        printf(
-                            "\033[30;%um%u%u", out[y][x] % 9 + 99, out[y][x],
-                            out[y][x]);
-                    } else
-                        printf("\033[0;90m00");
-                }
-                printf("\n");
-            }
-            printf("\n\033[0;37m");
-        }
+        if (debug) printGardens(gds, maxw, maxy);
     }
-    //*/
 }
 
 
 
-inline void swap(Rect **c, uint a, uint b) {
-    Rect *tmp = c[a];
-    c[a]      = c[b];
-    c[b]      = tmp;
+inline void swap(Rect **list, uint a, uint b) {
+    Rect *tmp = list[a];
+    list[a]   = list[b];
+    list[b]   = tmp;
 }
 
+// Permutation
 void permut(Rect **r, uint end) {
     if (end == 0) {
         testGardens(r);
@@ -220,6 +229,8 @@ void permut(Rect **r, uint end) {
         }
     }
 }
+
+
 
 int main(int argc, const char *argv[]) {
     FILE *fp = NULL;
@@ -254,65 +265,55 @@ int main(int argc, const char *argv[]) {
     }
     fclose(fp);
 
+    // jede Gartenliste aus Eingabedatei behandeln
     for (auto &gardens: gardenList) {
         minw = i = 0;
 
+        // lese Gartenlisteninformationen
         opt = gardens.back();
         gardens.pop_back();
 
+        printf("\n-- %i: ---------------------\n", opt->h);
+
         // wende ggT an
         opt->w /= opt->x;
-        opt->h /= opt->y;
 
-        // besetze Speicher für Reihenfolge
-        Rect *_order[opt->i];
+        // besetze Speicher
+        Rect *garden[opt->i], // random-access Gartenliste
+            *_order[opt->i];  // für Kopie der besten Reihenfolge
+        order = _order;
 
         // resette minimale Fläche
         minA = 0;
 
-        // Speichere Zeiger auf Gärten in Array
-        Rect *garden[opt->i];
-        order = _order;
-
+        // Vorberechnungen
         for (Rect *&rect: gardens) {
-            *order++    = new Rect(0, 0, 0, 0, i);
+            // Speichere Zeiger auf Gärten in Array
             garden[i++] = rect;
+
             // wende ggT an
             rect->w /= opt->x;
             rect->h /= opt->y;
+
+            // berechne minimale Rechteck-Breite
             if (minw < rect->w) minw = rect->w;
+
+            // erstelle Zeiger auf Garten in order-Liste
+            *order++ = new Rect(0, 0, 0, 0, i);
         }
 
-        printf("\n-- %i: ---------------------\n", garden[0]->x);
-        // teste alle Permutationen
+        // teste alle Garten-Permutationen
         order = _order;
         permut(garden, opt->i - 1);
 
+        // Ausgabe
         printf(
             "min: %u x %u = %u\n", maxW * opt->x, maxH * opt->y,
             minA * opt->x * opt->y);
 
-        uint x, y, out[maxH][maxW];
-        for (y = 0; y < maxH; y++)
-            for (x = 0; x < maxW; x++) out[y][x] = 0;
+        printGardens(order, maxW, maxH);
 
-        for (i = 0; i < opt->i; i++) {
-            for (y = 0; y < order[i]->h; y++)
-                for (x = 0; x < order[i]->w; x++)
-                    out[order[i]->y + y][order[i]->x + x] = order[i]->i + 1;
-
-            delete order[i];
-        }
-
-        for (y = 0; y < maxH; y++) {
-            for (x = 0; x < maxW; x++) {
-                if (out[y][x]) {
-                    printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
-                } else
-                    printf("\033[0;90m 0");
-            }
-            printf("\033[0;37m\n");
-        }
+        for (i = 0; i < opt->i; i++) delete order[i];
     }
 
     freeSchrebergaerten();
