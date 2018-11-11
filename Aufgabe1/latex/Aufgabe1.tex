@@ -88,7 +88,7 @@ Die Anfragen werden in einem (eigentlich zweidimensionalen, in diesem Fall wegen
 Der erste Schritt besteht also darin, den ersten User als Superstar anzunehmen, und die Beziehung zum folgenden User zu prüfen. Folgt User1 User2, wird User2 der neue Superstar und User1 ausgeschlossen, andernfalls umgekehrt. Danach wird die Beziehung des verbleibenden Superstars zum dritten User abgefragt, ein User ausgeschlossen usw.. Dies wiederholt man n-1 mal, sodass am Ende nur ein User als Superstar infrage kommt.
 
 \subsection{Superstarvalidierung}
-Die Validierung erfolgt dann nurnoch durch Abfragen zwischen allen Usern und dem Superstar und dem Superstar mit allen Anderen. Somit entstehen im Worst-Case noch zwei mal n-1 Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was insgesamt n-2 Anfragen erfordert.
+Die Validierung erfolgt dann nurnoch durch Abfragen zwischen allen Usern und dem Superstar und dem Superstar mit allen Anderen. Somit entstehen im Worst-Case noch zwei mal n-1 Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was insgesamt n Anfragen erfordert.
 
 Gibt es keinen Superstar in der Gruppe, können im Best-Case n Anfragen ausreichen, wenn der zweite User dem ersten folgt.
 

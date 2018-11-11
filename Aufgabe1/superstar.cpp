@@ -151,7 +151,10 @@ int main(int argc, const char* argv[]) {
     }
 
     // Datei öffnen
-    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) return 1;
+    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) {
+        error("no input file");
+        return 1;
+    }
 
     // Datei einlesen
     if (initSuperstar(fp)) {

@@ -6,6 +6,7 @@
 // Includes
 #include "../base/base.hpp"
 
+#include <algorithm>
 #include <list>
 
 const char *helpStr =
@@ -205,12 +206,6 @@ void testGardens(Rect **gds) {
 
 
 
-inline void swap(Rect **list, uint a, uint b) {
-    Rect *tmp = list[a];
-    list[a]   = list[b];
-    list[b]   = tmp;
-}
-
 // Permutation
 void permut(Rect **r, uint end) {
     if (end == 0) {
@@ -222,9 +217,9 @@ void permut(Rect **r, uint end) {
         for (i = 0; i < end; i++) {
             // nicht tauschen und permutieren wenn Größe übereinstimmt
             if (r[i]->w != r[end]->w || r[i]->h != r[end]->h) {
-                swap(r, i, end);
+                swap(r[i], r[end]);
                 permut(r, end - 1);
-                swap(r, i, end);
+                swap(r[i], r[end]);
             }
         }
     }

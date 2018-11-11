@@ -10,9 +10,7 @@ endif
 all: $(SUBDIRS)
 
 clean:
-	for dir in $(SUBDIRS);
-		do make -C $$dir clean;
-	done
+	for dir in $(SUBDIRS); do make -C $$dir clean; done
 
 $(SUBDIRS):
 	make -C $@ $(OP)
