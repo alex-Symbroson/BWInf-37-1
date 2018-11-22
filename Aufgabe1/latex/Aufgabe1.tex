@@ -1,5 +1,6 @@
 \documentclass[a4paper,10pt,ngerman]{scrartcl}
 \usepackage{babel}
+\usepackage{eurosym}
 \usepackage[T1]{fontenc}
 \usepackage[utf8x]{inputenc}
 \usepackage[a4paper,margin=2.5cm]{geometry}
@@ -30,13 +31,16 @@
 % Für Quelltext
 \usepackage{listings}
 \usepackage{color}
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{clgreen}{rgb}{0,0.6,0}
+\definecolor{clgray}{gray}{0.5}
+\definecolor{clmauve}{rgb}{0.58,0,0.82}
+\definecolor{cllgray}{gray}{0.95}
 \lstset{
-    keywordstyle=\color{blue}, commentstyle=\color{mygreen},
-    stringstyle=\color{mymauve}, rulecolor=\color{black},
-    basicstyle=\footnotesize\ttfamily, numberstyle=\tiny\color{mygray},
+    columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
+    backgroundcolor = \color{cllgray}, keywordstyle=\color{blue},
+    commentstyle=\color{clgreen}, stringstyle=\color{clmauve},
+    rulecolor=\color{black}, basicstyle=\footnotesize\ttfamily,
+    numberstyle=\tiny\color{clgray},
     captionpos=b, keepspaces=true, numberfirstline=false,
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
@@ -64,7 +68,9 @@
 \begin{document}
 
 \maketitle
+\pagebreak
 \tableofcontents
+\pagebreak
 
 \section{Lösungsidee}
 Jeder User steht mit allen Anderen in Beziehung und jede Beziehung schließt jemanden davon aus, der Superstar zu sein: Folgt User A User B, kann User A kein Superstar sein, da der Superstar niemandem folgen darf, und die Wahrscheinlichkeit, dass User B der Superstar ist, steigt. Folgt User A User B nicht, kann User B kein Superstar sein, da alle anderen dem Superstar folgen müssen, dafür kan User A weiterhin ein Superstar sein.
@@ -73,28 +79,89 @@ Somit kann im ersten Schritt mit n-1 Abfragen ein einziger User bestimmt werden,
 
 Um doppelte Anfragen zu vermeiden, können außerdem bereits abgefragte Beziehungen gespeichert werden.
 
-
+\pagebreak
 \section{Umsetzung}
 
 \subsection{User}
-Jeder User wird durch eine Klasse dargestellt, die den Namen, eine ID (die dem Index in der User-Liste entspricht), einen boolean, der anzeigt, ob der User ein Superstar sein kann und eine Liste von Usern, denen er folgt, enthält.
+Jeder User wird durch eine Klasse dargestellt, die den Namen, eine ID (die dem Index in der User-Liste entspricht), einen Wahrheitswert der anzeigt, ob der User ein Superstar sein kann und eine Liste von Usern, denen er folgt, enthält. Letztere wird während des Einlesens der Eingabedatei initialisiert.
 
-Beim Einlesen der Eingabedatei werden dann zunächst alle User in der User-Liste gespeichert, auf die dann bei der Gefolgten-Liste nur noch referenziert werden muss.
+Beim Einlesen der Eingabedatei werden zusätzlich alle User in der users-Liste gespeichert, auf die dann in der Gefolgten-Liste nur noch per ID referenziert werden muss.
 
 \subsection{Anfragenspeicherung}
 Die Anfragen werden in einem (eigentlich zweidimensionalen, in diesem Fall wegen C++ in die erste Dimension projiziertes) Array gespeichert. In diesem Array sind für jede mögliche Beziehung 3 verschiedene Status Möglich: noch nicht abgefragt, folgt oder folgt nicht.
 
 \subsection{Superstarfindung}
-Der erste Schritt besteht also darin, den ersten User als Superstar anzunehmen, und die Beziehung zum folgenden User zu prüfen. Folgt User1 User2, wird User2 der neue Superstar und User1 ausgeschlossen, andernfalls umgekehrt. Danach wird die Beziehung des verbleibenden Superstars zum dritten User abgefragt, ein User ausgeschlossen usw.. Dies wiederholt man n-1 mal, sodass am Ende nur ein User als Superstar infrage kommt.
+Der erste Schritt besteht nun darin, den ersten User als Superstar anzunehmen und die Beziehung zum folgenden User zu prüfen. Folgt User1 User2, wird User2 der neue Superstar und User1 ausgeschlossen, andernfalls umgekehrt. Danach wird die Beziehung des verbleibenden Superstars zum dritten User abgefragt, ein User ausgeschlossen usw.. Dies wiederholt man n-1 mal, sodass am Ende nur ein User als Superstar infrage kommt.
 
 \subsection{Superstarvalidierung}
-Die Validierung erfolgt dann nurnoch durch Abfragen zwischen allen Usern und dem Superstar und dem Superstar mit allen Anderen. Somit entstehen im Worst-Case noch zwei mal n-1 Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was insgesamt n Anfragen erfordert.
+Die Validierung erfolgt dann nurnoch durch Abfragen zwischen allen Usern und dem Superstar und umgekehrt. Somit entstehen im Worst-Case noch 2*(n-1) Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was noch einmal n-1, also insgesamt 2*(n-1) Anfragen erfordert.
 
 Gibt es keinen Superstar in der Gruppe, können im Best-Case n Anfragen ausreichen, wenn der zweite User dem ersten folgt.
 
-%\section{Beispiele}
-%\subsection{Sonderfall 1} Ein weiterer Sonderfall wäre der, dass keine Übereinstimmung gefunden wird. Auch dies muss dem Nutzer mitgeteilt werden und der Papagei notfalls eine Ehrenrunde drehen.
+\subsection{Ausgabe}
+Es werden zunächst alle User mit deren entsprechenden ID im Format (ID:Name) ausgegeben, auf die sich dann in Folgenden Ausgaben bezogen wird. In den Abfragetabellen werden in dieser Reihenfolge erst der aktuell angenommene Superstar, der User zu dem die Beziehung getestet wird, das Ergebnis der Anfrage als Wahrheitswert, die Kosten, die die Anfrage verursacht hat (0, wenn bereits zuvor dieselbe Anfrage getätig wurde, sonst 1), und am Ende der Zeile die aktuelle Gesamtsumme der bereits entstandenen Kosten.
+Zwischen Superstarerkennung und Superstarvalidierung wird noch einmal der aktuell vermutete Superstar namentlich ausgegeben.
+Nachdem die Existenz eines Superstar ermittelt wurde, erfolgt eine entsprechende Ausgabe, die Anzahl der Personen samt entstandener Kosten und die Preisschätzung.
 
+\pagebreak
+\section{Beispiele}
+\subsection{superstar1.txt}
+Ausgabe:
+\begin{lstlisting}
+Names: 0:Selena 1:Justin 2:Hailey
+
+Star User Follows Cost | Sum
+   0    1    true    1 |   1
+   1    2   false    1 |   2
+
+Suspected star: Justin
+
+Star User Follows Cost | Star User Follows Cost | Sum
+   1    0   false    1 |    0    1    true    0 |   3
+   1    2   false    0 |    2    1    true    1 |   4
+
+Justin is the superstar!
+
+Persons:    3
+Price:      4€
+
+Estimation (on success):
+ Worst:     6€
+ Best:      4€
+\end{lstlisting}
+
+\subsection{superstar3.txt}
+Ausgabe:
+\begin{lstlisting}
+Names: 0:Edsger 1:Jitse 2:Jorrit 3:Peter 4:Pia 5:Rineke 6:Rinus 7:Sjoukje
+
+Star User Follows Cost | Sum
+   0    1    true    1 |   1
+   1    2   false    1 |   2
+   1    3   false    1 |   3
+   1    4   false    1 |   4
+   1    5   false    1 |   5
+   1    6   false    1 |   6
+   1    7   false    1 |   7
+
+Suspected star: Jitse
+
+Star User Follows Cost | Star User Follows Cost | Sum
+   1    0    true    1 |
+
+Termination due to (1:Jitse) (0:Edsger)
+There is no superstar in this group.
+
+Persons:    8
+Price:      8€
+
+Estimation (on success):
+ Worst:    21€
+ Best:     14€
+\end{lstlisting}
+
+
+\pagebreak
 \section{Quellcode}
 
 \begin{lstlisting} %[frame=single]
@@ -107,28 +174,27 @@ Gibt es keinen Superstar in der Gruppe, können im Best-Case n Anfragen ausreich
 
 struct User {
     char* name;            // Name
-    uint16_t id;           // ID = users-Index
+    uint id;               // ID = users-Index
     bool star;             // Status: kann Superstar sein
     vector<User*> follows; // Folgt-Liste
 };
+
 vector<User> users; // User-Liste
 
-uint16_t count = 0, // gesamt User-Anzahl
-    stars      = 0, // verbleibende Superstars
-    cost       = 0; // entstandene Kosten
-
-uint8_t* follow; // gespeicherte Abfragen
+uint count = 0, // gesamt User-Anzahl
+    stars  = 0, // verbleibende Superstars
+    cost   = 0, // entstandene Kosten
+    *follow;    // gespeicherte Abfragen
 
 /* ... */
 
-bool initUsers(FILE* fp) {
+bool initSuperstar(FILE* fp) {
     char *line = NULL, *pch;
-    ssize_t read;
+    uint read;
     size_t len = 0;
 
     // lese Namenliste
-    read = getline(&line, &len, fp);
-    if (read == -1) {
+    if ((read = getline(&line, &len, fp)) == (uint)-1) {
         error("Error reading file");
         return true;
     }
@@ -140,10 +206,7 @@ bool initUsers(FILE* fp) {
     pch = strtok(buffer, " \n");
     while (pch != NULL) {
         if (isalpha(*pch)) {
-            users.push_back({.name    = strdup(pch),
-                             .id      = count,
-                             .star    = true,
-                             .follows = {}});
+            users.push_back({.name = strdup(pch), .id = count, .star = true, .follows = {}});
             count++;
         }
         pch = strtok(NULL, " \n");
@@ -151,7 +214,7 @@ bool initUsers(FILE* fp) {
 
     // lese Folgebeziehungen
     User* cur = NULL;
-    while ((read = getline(&line, &len, fp)) != -1) {
+    while ((read = getline(&line, &len, fp)) != (uint)-1) {
         if (!(pch = strtok(line, " \n"))) continue;
         if (cur == NULL || strcmp(pch, cur->name)) cur = findUser(pch);
         cur->follows.push_back(findUser(strtok(NULL, " \n")));
@@ -164,19 +227,19 @@ bool initUsers(FILE* fp) {
 /* ... */
 
 bool follows(User& a, User& b, bool nobrk) {
-    printf("%4i %4i%4i ", stars, a.id, b.id);
-    uint8_t* folw = follow + (a.id * count + b.id);
+    printf("%4i %4i ", a.id, b.id);
+    uint* folw = follow + (a.id * count + b.id);
 
     switch (follow[a.id * count + b.id]) {
-        case FOLLOW_NOP: printf(" nein    * |%c", "\n "[nobrk]); return false;
-        case FOLLOW_YES: printf("   ja    * |%c", "\n "[nobrk]); return true;
+        case FOLLOW_NOP: printReq(false, 0, nobrk); return false;
+        case FOLLOW_YES: printReq(true, 0, nobrk); return true;
 
         default:
             cost++;
             // suche Übereinstimmung
             for (User* u: a.follows) {
                 if (u == &b) {
-                    printf("   ja%5i |%c", cost, "\n "[nobrk]);
+                    printReq(true, 1, nobrk);
                     *folw = FOLLOW_YES;
                     if (a.star) {
                         a.star = 0;
@@ -186,7 +249,7 @@ bool follows(User& a, User& b, bool nobrk) {
                 }
             }
 
-            printf(" nein%5i |%c", cost, "\n "[nobrk]);
+            printReq(false, 1, nobrk);
             *folw = FOLLOW_NOP;
             if (b.star) {
                 b.star = 0;
@@ -198,24 +261,30 @@ bool follows(User& a, User& b, bool nobrk) {
 
 int main(int argc, const char* argv[]) {
     FILE* fp = NULL;
+    uint i;
+
+    // Argumente einlesen
+    /* ... */
 
     // Datei öffnen
-    if (argc > 1) tryOpen(argv[1], fp);
-    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) return true;
+    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) {
+        error("no input file");
+        return 1;
+    }
 
     // Datei einlesen
-    if (initUsers(fp)) {
+    if (initSuperstar(fp)) {
         fclose(fp);
         error("initialization failed");
         return 1;
     }
 
-    printf("\nNamen:\n");
-    for (User& a: users) printf("(%i:%s)", a.id, a.name);
-    printf("\n\nstar   U1  U2 folgt Cost |\n");
+    // Namen mit ID ausgeben
+    printf("\nNames:\n");
+    for (User& a: users) printf(" %i:%s", a.id, a.name);
+    printf("\n\nStar User Follows Cost | Sum\n");
 
-    uint8_t _follow[count * count];
-    uint16_t i, j;
+    uint j, _follow[count * count];
 
     stars  = count;
     follow = _follow;
@@ -239,9 +308,10 @@ int main(int argc, const char* argv[]) {
         // speichere verbleibenden Star in first
         if (follows(*first, *second, false)) first = second;
     }
+
     printf(
-        "\nvermuteter Star: %s\n\nstar   U1  U2 folgt Cost | star   U1  U2 "
-        "folgt Cost |\n",
+        "\n\033[0;33mSuspected star: %s\033[0;37m\n\nStar User Follows Cost | "
+        "Star User Follows Cost | Sum\n",
         first->name);
 
     // validiere Star
@@ -249,24 +319,25 @@ int main(int argc, const char* argv[]) {
         if (&b != first &&
             (follows(*first, b, true) || !follows(b, *first, false))) {
             printf(
-                "\n\nabbruch wegen (%i:%s) (%i:%s)", first->id, first->name,
-                b.id, b.name);
+                "\n\nTermination due to (%i:%s) (%i:%s)", first->id,
+                first->name, b.id, b.name);
             break;
         }
 
+
     // Ausgabe
     if (stars == 1)
-        printf("\n\033[0;32m%s ist der Superstar!\033[0;37m\n", first->name);
+        printf("\n\033[0;32m%s is the superstar!\033[0;37m\n", first->name);
     else
-        printf(
-            "\n\033[0;33mEs gibt keinen Superstar in dieser "
-            "Gruppe.\033[0;37m\n");
+        printf("\n\033[0;33mThere is no superstar in this group.\033[0;37m\n");
 
-    printf("\nPersonen:%4i\nPreis:   %4i€\n", count, cost);
     printf(
-        "\nSchätzung (bei Erfolg):\n Worst:  %4i€\n Best:   %4i€\n",
-        3 * (count - 1), 2 * (count - 1));
-    freeUsers();
+        "\nPersons:%5i\nPrice:  %5i€\n"
+        "\nEstimation (on success):\n Worst:  %4i€\n Best:   %4i€\n",
+        count, cost, 3 * (count - 1), 2 * (count - 1));
+
+
+    freeSuperstar();
     fclose(fp);
 }
 \end{lstlisting}

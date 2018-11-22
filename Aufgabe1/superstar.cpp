@@ -96,21 +96,28 @@ bool initSuperstar(FILE* fp) {
 }
 
 
+void printReq(bool res, int paid, bool nobrk) {
+    printf("  %s%5i", res ? " true" : "false", paid);
+    if (nobrk)
+        printf(" | ");
+    else
+        printf(" |%4i\n", cost);
+}
 
 bool follows(User& a, User& b, bool nobrk) {
-    printf("%4i %4i%4i ", stars, a.id, b.id);
+    printf("%4i %4i ", a.id, b.id);
     uint* folw = follow + (a.id * count + b.id);
 
     switch (follow[a.id * count + b.id]) {
-        case FOLLOW_NOP: printf(" nein    * |%c", "\n "[nobrk]); return false;
-        case FOLLOW_YES: printf("   ja    * |%c", "\n "[nobrk]); return true;
+        case FOLLOW_NOP: printReq(false, 0, nobrk); return false;
+        case FOLLOW_YES: printReq(true, 0, nobrk); return true;
 
         default:
             cost++;
             // suche Übereinstimmung
             for (User* u: a.follows) {
                 if (u == &b) {
-                    printf("   ja%5i |%c", cost, "\n "[nobrk]);
+                    printReq(true, 1, nobrk);
                     *folw = FOLLOW_YES;
                     if (a.star) {
                         a.star = 0;
@@ -120,7 +127,7 @@ bool follows(User& a, User& b, bool nobrk) {
                 }
             }
 
-            printf(" nein%5i |%c", cost, "\n "[nobrk]);
+            printReq(false, 1, nobrk);
             *folw = FOLLOW_NOP;
             if (b.star) {
                 b.star = 0;
@@ -163,9 +170,10 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
 
-    printf("\nNamen:\n");
-    for (User& a: users) printf("(%i:%s)", a.id, a.name);
-    printf("\n\nstar   U1  U2 folgt Cost |\n");
+    // Namen mit ID ausgeben
+    printf("\nNames:");
+    for (User& a: users) printf(" %i:%s", a.id, a.name);
+    printf("\n\nStar User Follows Cost | Sum\n");
 
     uint j, _follow[count * count];
 
@@ -193,8 +201,8 @@ int main(int argc, const char* argv[]) {
     }
 
     printf(
-        "\nvermuteter Star: %s\n\nstar   U1  U2 folgt Cost | star   U1  U2 "
-        "folgt Cost |\n",
+        "\n\033[0;33mSuspected star: %s\033[0;37m\n\nStar User Follows Cost | "
+        "Star User Follows Cost | Sum\n",
         first->name);
 
     // validiere Star
@@ -202,23 +210,21 @@ int main(int argc, const char* argv[]) {
         if (&b != first &&
             (follows(*first, b, true) || !follows(b, *first, false))) {
             printf(
-                "\n\nabbruch wegen (%i:%s) (%i:%s)", first->id, first->name,
-                b.id, b.name);
+                "\n\nTermination due to (%i:%s) (%i:%s)", first->id,
+                first->name, b.id, b.name);
             break;
         }
 
 
     // Ausgabe
     if (stars == 1)
-        printf("\n\033[0;32m%s ist der Superstar!\033[0;37m\n", first->name);
+        printf("\n\033[0;32m%s is the superstar!\033[0;37m\n", first->name);
     else
-        printf(
-            "\n\033[0;33mEs gibt keinen Superstar in dieser "
-            "Gruppe.\033[0;37m\n");
+        printf("\n\033[0;33mThere is no superstar in this group.\033[0;37m\n");
 
     printf(
-        "\nPersonen:%4i\nPreis:   %4i€\n"
-        "\nSchätzung (bei Erfolg):\n Worst:  %4i€\n Best:   %4i€\n",
+        "\nPersons:%5i\nPrice:  %5i€\n"
+        "\nEstimation (on success):\n Worst:  %4i€\n Best:   %4i€\n",
         count, cost, 3 * (count - 1), 2 * (count - 1));
 
 
