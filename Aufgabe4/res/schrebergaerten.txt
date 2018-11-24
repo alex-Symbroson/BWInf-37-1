@@ -1,18 +1,13 @@
 Zu dieser Aufgabe gibt es drei Beispiele von Schrebergärten (jeder
-Garten mit Länge x Breite), wobei das erste dem Beispiel in der
-Aufgabenstellung entspricht:
+Garten als Rechteck mit Länge x Breite), wobei das erste dem Beispiel in
+der Aufgabenstellung entspricht (Drehungen der Rechtecke werden zur
+Lösung der Aufgabe nicht benötigt):
 
-0.
-15 x 25, 30 x 15, 20 x 25, 25 x 15.
+1. Beispiel:
+25 x 15, 15 x 30, 15 x 25, 25 x 20
 
-1.
-25 x 15, 30 x 15, 25 x 20, 25 x 15.
+2. Beispiel:
+6 x 3, 2 x 2, 3 x 1, 4 x 4, 4 x 4
 
-2.
-6 x 3, 2 x 2, 3 x 1, 4 x 4, 4 x 4.
-
-3.
-4 x 4, 3 x 2, 6 x 1, 5 x 2, 5 x 3.
-
-4.
-5 x 1, 5 x 1, 6 x 1, 5 x 1, 5 x 1.
+3. Beispiel:
+4 x 4, 2 x 3, 6 x 1, 5 x 2, 3 x 5.
