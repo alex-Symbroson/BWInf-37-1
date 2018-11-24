@@ -177,9 +177,7 @@ int main(int argc, const char* argv[]) {
 
         // twist word
         if (!untwist) {
-            for (i = 2; i <= l; i++)
-                swap(buf[rand() % (l - 2) + 1], buf[rand() % (l - 2) + 1]);
-
+            for (i = 1; i < l - 1; i++) swap(buf[i], buf[rand() % (l - 2) + 1]);
             wprintf(L"%.*ls", l, buf);
 
             // untwist

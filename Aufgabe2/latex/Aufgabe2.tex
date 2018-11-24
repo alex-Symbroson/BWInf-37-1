@@ -34,15 +34,15 @@
 \usepackage{color}
 \definecolor{clorange}{rgb}{1.0, 0.49, 0.0}
 \definecolor{clgreen}{rgb}{0,0.6,0}
-\definecolor{clgray}{gray}{0.5}
+\definecolor{clgrey}{gray}{0.5}
 \definecolor{clmauve}{rgb}{0.58,0,0.82}
-\definecolor{cllgray}{gray}{0.95}
+\definecolor{clgray}{gray}{0.95}
 \lstset{
     columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
-    backgroundcolor = \color{cllgray}, keywordstyle=\color{blue},
+    backgroundcolor = \color{clgray}, keywordstyle=\color{blue},
     commentstyle=\color{clgreen}, stringstyle=\color{clmauve},
     rulecolor=\color{black}, basicstyle=\footnotesize\ttfamily,
-    numberstyle=\tiny\color{clgray},
+    numberstyle=\tiny\color{clgrey},
     captionpos=b, keepspaces=true, numberfirstline=false, breaklines=true,
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
@@ -112,10 +112,17 @@ In einer dritten Stufe kann man dann auch noch den Endbuchstaben betrachten. Som
 
 
 \pagebreak
+\newsubsection{Wortverdrehung}
+
+Standardmäßig wird die Eingabe per Eingabedatei oder durch lesen des Input-Streames (stdin) getwistet.
+Hierbei werden abwechselnd Sonderzeichen und Alphabetische Zeichen bis zum nächsten Leerzeichen eingelesen und in letzterem Fall alle Zeichen zwischen dem ersten und letzten Buchstaben des Wortes mit einem zufälligen Buchstaben aus demselben Bereich vertauscht, bevor sie ausgegeben werden.
+
 \newsubsection{Wortentdrehung}
 
+Die Wortentdrehung erfolgt mit der --untwist Option und folgt beim Einlesen demselben Prinzip wie bei der Verdrehung.
+
 \newsubsubsection{Findung}
-Von der Eingabedatei werden abwechselnd Sonderzeichen und alphabetische Zeichen eingelesen und bei jedem Leerzeichen das eingelesene Wort behandelt, wobei erstere sofort ausgegeben und Wörter zunächst auf die Länge geprüft werden. Ist es kürzer als 4 Zeichen oder länger als die maximal definierte Länge, wird ebenfalls sofort ausgegeben, da es keine vertauschten Buchstaben geben bzw. nicht in der Wortliste verzeichnet worden sein kann.
+Jedes Wort wird zunächst auf seine Länge geprüft. Ist es kürzer als 4 Zeichen oder länger als die maximal definierte Länge, wird ebenfalls sofort ausgegeben, da es keine vertauschten Buchstaben geben bzw. nicht in der Wortliste verzeichnet worden sein kann.
 
 \newsubsubsection{Erstauswahl}
 Ist all dies nicht der Fall, wird dass Wort in der Wortliste gesucht. Dabei werden zuerst Anfangs- und Endbuchstaben verglichen. Bei den Anfangsbuchstaben muss beachtet werden, dass ein in der Wortliste klein geschriebenes Wort im Text großgeschrieben sein kann, wenn es am Satzanfang steht, allerdings kann ein inder Wortliste groß geschriebenes Wort niemals klein geschrieben sein.
@@ -157,7 +164,7 @@ Rock@g'@gn@g'@rRlol@r, @rRhyhtm@r @gand Blues oder spezieller@g
 
 \vspace{1\baselineskip}
 \subsection{twist2.txt}
-Hier ist 'wegbegeben' das einzige nicht gefundene Wort. Man müsste entweder all diese Worte der Wortliste hinzufügen oder dem Programm beibringen Wörter zu konjugieren, zu steigern, die Mehrzahl zu bilden etc. - Also die deutsche Sprache beibringen, um wirklich alle Wörter erkennen zu können. Dies kann höchstens durch extremes Hardcoding oder durch lernfähige Algorithmen erreicht werden, was beides hier nicht geeignet ist.
+Hier ist 'wegbegeben' das einzige nicht gefundene Wort, weil es zumindest in dieser Form nicht in der Wortliste verzeichnet ist, sondern nur die Form 'begeben'. Man müsste entweder alle Nebenformen eines Wortes der Wortliste hinzufügen oder dem Programm beibringen diese selbstständig zu bilden, also die deutsche Sprache beibringen, um wirklich alle Wörter erkennen zu können. Dies kann höchstens durch extremes Hardcoding oder durch lernfähige Algorithmen erreicht werden, was beides hier nicht geeignet ist.
 
 \begin{lstlisting}
 @gHat der alte Hexenmeister sich doch einmal@g @rwgegebeben@r! @gUnd nun sollen seine Geister auch nach meinem Willen leben@g. @gSeine Wort und Werke merkt ich und den Brauch@g, @gund mit Geistesstärke tu ich Wunder auch@g.
@@ -275,9 +282,7 @@ int main(int argc, const char* argv[]) {
 
         // twist word
         if (!untwist) {
-            for (i = 2; i <= l; i++)
-                swap(buf[rand() % (l - 2) + 1], buf[rand() % (l - 2) + 1]);
-
+            for (i = 1; i < l - 1; i++) swap(buf[i], buf[rand() % (l - 2) + 1]);
             wprintf(L"%.*ls", l, buf);
 
             // untwist
