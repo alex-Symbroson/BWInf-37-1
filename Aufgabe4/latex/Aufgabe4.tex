@@ -6,9 +6,9 @@
 \usepackage[a4paper,margin=2.5cm]{geometry}
 
 % Die nächsten drei Felder bitte anpassen:
-\newcommand{\Name}{Symbroson} % Teamname oder eigenen Namen angeben
-\newcommand{\TeamId}{00165}                       % Team-ID aus dem PMS
-\newcommand{\Aufgabe}{Junior 2: Baywatch} % Aufgabennummer und -name
+\newcommand{\Name}{Symbroson}                    % Teamname oder eigenen Namen angeben
+\newcommand{\TeamId}{00165}                      % Team-ID aus dem PMS
+\newcommand{\Aufgabe}{Aufgabe 4: Schrebergärten} % Aufgabennummer und -name
 
 % Kopf- und Fußzeilen
 \usepackage{scrlayer-scrpage}
@@ -48,6 +48,7 @@
     language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
     {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
     {²}{{\unichar{"00B2}}}1,
+    moredelim=**[is][\color{clgrey}]{@SH}{@SH},
     moredelim=*[is][\color{red}]{@r}{@r}, moredelim=*[is][\color{green}]{@g}{@g},
     moredelim=*[is][\color{blue}]{@b}{@b}, moredelim=*[is][\color{clgray}]{@h}{@h},
     moredelim=*[is][\color{clorange}]{@y}{@y}, moredelim=*[is][\color{magenta}]{@m}{@m},
@@ -75,9 +76,12 @@
 \begin{document}
 
 \maketitle
+\vspace{7\baselineskip}
 \tableofcontents
+\pagebreak
 
 \section{Lösungsidee}
+\vspace{1\baselineskip}
 Ziel ist es, jedes Rechteck möglichst optimal in ein größeres einzuordnen. Da jedes Rechteck möglichst wenig Platz zu seinem Nachbarn haben soll, kann man damit anfangen, jedes Reckteck der Reihe nach neben das Vorherige zu platzieren.
 
 Im zweiten Schritt limitiert man die Breite des Rechtecks um einen Garten und sortiert so lange Gärten ein, bis die Breite des Rechtecks von einem Garten überschritten wird. Dann muss dieser Garten auf der Y-Achse verschoben und von vorn alle X-Werte ausprobiert werden, ohne dass sich der Garten nicht mit anderen Gärten überschneidet.
@@ -86,7 +90,10 @@ Nachdem alle Gärten eingeordnet sind, wird die Fläche des entstandenen Rechtec
 
 Dies allein reicht aber micht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt. Deswegen müssen alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert werden. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
 
+
+\pagebreak
 \section{Umsetzung}
+
 Jeder Garten besitzt Imformationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Abstrahierung wieder als Klasse mit den genannten Eigenschaften.
 
 Um während des gesamten Einsortierungssprozesses Zeit zu sparen, wird bereits während des Einlesens der Gartenlisten der ggT von Höhe und Breite einer Gartenliste berechnet, um dann alle Höhen und Breiten durch dieses teilen zu können.
@@ -100,9 +107,13 @@ Wurde ein geringerer Flächeninhalt als zuvor gefunden werden die Garteneigensch
 
 Die Ausgabe erfolgt in der Konsole mit per Escape-Sequenz gefärbten Feldern. (nähere Informationen im README.txt) Es muss beachtet werden, dass die Größe weiterhin durch das ggT geteilt ist, wodurch das Seitenverhältnis möglicherweise nicht mehr stimmt. Die reellen Maße sowie der Flächeninhalt stehen jedoch zum Vergleich über der Ausgabe.
 
+
+\pagebreak
 \section[Beispiele]{Beispiele - schrebergaerten.txt}
+
 \subsection{Liste 0.}
 \begin{lstlisting}
+@SH$ make run ARGS="--circuit=0"@SH
 -- 0: ---------------------
 min: 45m x 40m = 1800m²
 @g 2 2 2 2 2 2@r 1 1 1
@@ -117,6 +128,7 @@ min: 45m x 40m = 1800m²
 
 \subsection{Liste 1.}
 \begin{lstlisting}
+@SH$ make run ARGS="--circuit=1"@SH
 -- 1: ---------------------
 min: 55m x 35m = 1925m²
 @r 1 1 1 1 1@g 2 2 2 2 2 2
@@ -130,6 +142,7 @@ min: 55m x 35m = 1925m²
 
 \subsection{Liste 2.}
 \begin{lstlisting}
+@SH$ make run ARGS="--circuit=2"@SH
 -- 2: ---------------------
 min: 9m x 7m = 63m²
 @r 1 1 1 1 1 1@y 3 3 3
@@ -143,6 +156,7 @@ min: 9m x 7m = 63m²
 
 \subsection{Liste 3.}
 \begin{lstlisting}
+@SH$ make run ARGS="--circuit=3"@SH
 -- 3: ---------------------
 min: 9m x 6m = 54m²
 @y 3 3 3 3 3 3@g 2 2 2
@@ -156,12 +170,14 @@ min: 9m x 6m = 54m²
 \subsection{Liste 4 - Sonderfall}
 Es kann durchaus sein, dass alle Gärten die gleiche Höhe oder Breite haben. Dadurch ist die optimale Anordnung in W-O bzw N-S Richtung. Das ist auch der Grund, warum man bei der maximalen Breite des Rechtecks keine Abstriche machen darf.
 \begin{lstlisting}
+@SH$ make run ARGS="--circuit=4"@SH
 -- 4: ---------------------
 min: 26m x 1m = 26m²
 @r 1 1 1 1 1@g 2 2 2 2 2@y 3 3 3 3 3 3@b 4 4 4 4 4@m 5 5 5 5 5@x
 \end{lstlisting}
 
 
+\pagebreak
 \section{Quellcode}
 
 \begin{lstlisting}[language=C++]
@@ -310,7 +326,7 @@ void permut(Rect **r, uint end) {
 
 int main(int argc, const char *argv[]) {
     FILE *fp = NULL;
-    uint i;
+    uint i, cnum = -1;
 
     // Argumente und Eingabedatei einlesen
     /* ... */
@@ -323,6 +339,7 @@ int main(int argc, const char *argv[]) {
         opt = gardens.back();
         gardens.pop_back();
 
+        if (cnum != (uint)-1 && cnum != opt->h) continue;
         printf("\n-- %i: ---------------------\n", opt->h);
 
         // wende ggT an

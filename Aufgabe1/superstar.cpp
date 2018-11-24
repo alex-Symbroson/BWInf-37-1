@@ -210,8 +210,8 @@ int main(int argc, const char* argv[]) {
         if (&b != first &&
             (follows(*first, b, true) || !follows(b, *first, false))) {
             printf(
-                "\n\nTermination due to (%i:%s) (%i:%s)", first->id,
-                first->name, b.id, b.name);
+                "\n\n\033[0;33mTermination due to (%i:%s) (%i:%s)\033[0;31m",
+                first->id, first->name, b.id, b.name);
             break;
         }
 
@@ -220,7 +220,7 @@ int main(int argc, const char* argv[]) {
     if (stars == 1)
         printf("\n\033[0;32m%s is the superstar!\033[0;37m\n", first->name);
     else
-        printf("\n\033[0;33mThere is no superstar in this group.\033[0;37m\n");
+        printf("\n\033[0;31mThere is no superstar in this group.\033[0;37m\n");
 
     printf(
         "\nPersons:%5i\nPrice:  %5i€\n"

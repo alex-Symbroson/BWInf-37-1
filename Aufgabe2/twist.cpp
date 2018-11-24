@@ -121,7 +121,7 @@ int main(int argc, const char* argv[]) {
     }
 
     if (fp == NULL) {
-        fwprintf(stderr, L"info: press ctrl-d to exit from input\n\n");
+        // fwprintf(stderr, L"info: press ctrl-d to exit from input\n\n");
         fp = stdin;
     }
 

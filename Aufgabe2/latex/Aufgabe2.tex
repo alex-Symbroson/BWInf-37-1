@@ -50,6 +50,7 @@
     {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {„}{{\unichar{"201E}}}1
     {“}{{\unichar{"201C}}}1 {É}{{\unichar{"00C9}}}1 {À}{{\unichar{"00C0}}}1
     {Ê}{{\unichar{"00CA}}}1 {Â}{{\unichar{"00C2}}}1 {Ñ}{{\unichar{"00D1}}}1,
+    moredelim=**[is][\color{clgrey}]{@SH}{@SH},
     moredelim=**[is][\color{red}]{@r}{@r},
     moredelim=**[is][\color{clgreen}]{@g}{@g},
     moredelim=**[is][\color{clorange}]{@y}{@y}
@@ -92,7 +93,6 @@
 Bei jedem Wort sind Anfangsbuchstabe, Endbuchstabe und die Buchstabenanzahl gegeben. Man kann also durch diese Eigenschaften bei jedem getwisteten Wort die Wortliste bereits auf wenige mögliche Wörter einschränken.
 
 Die zweite Auswahl erfolgt durch den Vergleich der Buchstaben dazwischen, sofern das Wort länger als 3 Zeichen ist, da sonst keine Buchstaben vertauscht worden sein können. Somit kann in den meisten Fällen das gesuchte Wort gefunden und (grün) ausgegeben werden. Falls nicht, wird das Wort unverändert (rot), bzw. wenn mehrere Wörter möglich sind, werden diese alle (gelb, durch '|' getrennt) ausgegeben. Alle nicht-alphabetischen Zeichen werden weiß notiert.
-
 
 
 \pagebreak
@@ -149,10 +149,9 @@ Wenn nach der Suche nur ein Wort gefunden wurde, ist das gefundene Wort im Zwisc
 %}
 
 \vspace{1\baselineskip}
-\subsection[twist1.txt]{twist1.txt | enttwist.txt}
-In diesem Beispiel wurden anderssprachige Wörter (hier Englisch) verwendet. Diese können natürlich zumeist nicht gefunden werden oder führen sogar zu deutschen Wörtern mit einer völlig anderen Bedeutung. Das lässt sich leider nur schwer verhindern.
-
+\subsection[twist1.txt - Twisten]
 \begin{lstlisting}
+@SH$ make run ARGS="res/twist1.txt"@SH
 @gDer@g @rTiswt@r
 (@gEnglisch@g @rtwist@r = @gDrehung@g, @gVerdrehung@g)
 @gwar ein Modetanz im@g 4/4-@gTakt@g,
@@ -162,42 +161,63 @@ Rock@g'@gn@g'@rRlol@r, @rRhyhtm@r @gand Blues oder spezieller@g
 @rTiwst@r-@gMusik getanzt wird@g.
 \end{lstlisting}
 
-\vspace{1\baselineskip}
+\subsection[twist1.txt]{twist1.txt}
+
+In diesem Beispiel wurden anderssprachige Wörter (hier Englisch) verwendet. Diese können natürlich zumeist nicht gefunden werden oder führen sogar zu deutschen Wörtern mit einer völlig anderen Bedeutung. Das lässt sich leider nur schwer verhindern.
+
+\begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist1.txt | ./build/twist.out --untwist@SH
+@gDer@g @rTiswt@r
+(@gEnglisch@g @rtwist@r = @gDrehung@g, @gVerdrehung@g)
+@gwar ein Modetanz im@g 4/4-@gTakt@g,
+@gder in den@g @yführen@y|@yfrühen@y 1960@ger Jahren populär
+wurde und zu
+Rock@g'@gn@g'@rRlol@r, @rRhyhtm@r @gand Blues oder spezieller@g
+@rTiwst@r-@gMusik getanzt wird@g.
+\end{lstlisting}
+
 \subsection{twist2.txt}
 Hier ist 'wegbegeben' das einzige nicht gefundene Wort, weil es zumindest in dieser Form nicht in der Wortliste verzeichnet ist, sondern nur die Form 'begeben'. Man müsste entweder alle Nebenformen eines Wortes der Wortliste hinzufügen oder dem Programm beibringen diese selbstständig zu bilden, also die deutsche Sprache beibringen, um wirklich alle Wörter erkennen zu können. Dies kann höchstens durch extremes Hardcoding oder durch lernfähige Algorithmen erreicht werden, was beides hier nicht geeignet ist.
 
 \begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist2.txt | ./build/twist.out --untwist@SH
 @gHat der alte Hexenmeister sich doch einmal@g @rwgegebeben@r! @gUnd nun sollen seine Geister auch nach meinem Willen leben@g. @gSeine Wort und Werke merkt ich und den Brauch@g, @gund mit Geistesstärke tu ich Wunder auch@g.
 \end{lstlisting}
 
-\vspace{1\baselineskip}
 \subsection{twist3.txt}
 Auch in diesem Fall wurden andersprachige (französische) Ausdrücke verwendet. Das eigentliche Problem besteht aber aus den zusammengesetzten Substantiven. Auch hier lässt sich nicht ohne weiteres feststellen, ob dies der Fall ist und wo man diese trennen müsste, um auf die Basiswörter schließen zu können.
 
 \begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist3.txt | ./build/twist.out --untwist@SH
 @gEin Restaurant@g, @gwelches a la@g @rcarte@r @yabrietet@y|@yarbeitet@y, @gbietet sein Angebot ohne eine vorher festgelegte@g @rMlefrnoiüeneghe@r @gan@g. @gDadurch haben die Gäste zwar mehr Spielraum bei der Wahl ihrer Speisen@g, @gfür das Restaurant entstehen jedoch zusätzlicher Aufwand@g, @gda weniger@g @rPaesrhgulneichnist@r @gvorhanden ist@g.
 \end{lstlisting}
 
-\vspace{1\baselineskip}
 \subsection{twist4.txt}
 Mit Eigennamen verhält es sich genauso wie bei den vorherigen Beispielen. Man bräuchte wohl noch einige Lexika mehr um Eigennamen mit in die Suche einzubeziehen.
 
 \begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist4.txt | ./build/twist.out --untwist@SH
 @rAtgusua@r @gAda@g @rBroyn Knig@r, @rCuotenss@r @gof@g @rLlvaceoe@r, @gwar eine britische Adelige und Mathematikerin@g, @gdie als die erste Programmiererin überhaupt gilt@g. @yBreites@y|@yBieters@y|@yBereits@y 100 @gJahre vor dem Aufkommen der ersten Programmiersprachen ersann sie eine Rechen@g-@gMechanik@g, @gder einige Konzepte moderner Programmiersprachen vorwegnahm@g.
 \end{lstlisting}
 
-\vspace{1\baselineskip}
 \subsection{twist5.txt}
+
 Altteutsch ist ebenso schwierig zu erkennen und eine weitere Wortliste wäre vonnöten. Allerdings treten einige Ersetzungen vom Altdeutschen in die heutige Screibweise öfters auf. Die häufigsten sind beispielsweise \lstinline{"ß"} zu \lstinline{"ss"} oder \lstinline{"th"} zu \lstinline{"t"}. Diese Abfrage kann optional in dem Programm durch die \lstinline{--ckeck-alt} Flag eingeschalten werden, da man standardmäßig von Hochdeutsch ausgeht und andernfalls woanders ungewollt Fehler entstehen können, die sonst nicht aufträten.
 
 Ohne --chek-alt Option:
 \begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist5.txt | ./build/twist.out --untwist@SH
+...
 @gEntweder@g @rmtßue@r @gder Brunnen sehr tief sein@g, @goder sie@g @yfiel@y|@yfeil@y @gsehr langsam@g; @gdenn sie hatte Zeit genug@g, @gsich beim Fallen umzusehen und sich zu wundern@g, @gwas nun wohl geschehen würde@g. @gZuerst@g @yversuchte@y|@yvertusche@y @gsie hinunter zu sehen@g, @gum zu wissen wohin sie käme@g, @gaber es war zu dunkel etwas zu erkennen@g. @gDa besah sie die Wände des Brunnens und bemerkte@g, @gdaß sie mit@g @rKhnckhcärüeesnn@r @gund Bücherbrettern bedeckt waren@g; @ghier und da erblickte sie Landkarten und Bilder@g, @gan Haken aufgehängt@g. @gSie nahm im@g @rVofrleaeibln@r @gvon einem der Bretter ein@g @rTcefpöhn@r @gmit der@g @yAufschrift@y|@yAuffrischt@y: „@gEingemachte Apfelsinen@g“, @gaber zu ihrem großen@g @rVrerduß@r @gwar es leer@g. @gSie wollte es nicht fallen lassen@g, @gaus@g @yFurcht@y|@yFrucht@y @gJemand unter sich zu@g @rtedtön@r; @gund es gelang ihr@g, @ges in einen@g @yandren@y|@yandern@y @gSchrank@g, @gan dem sie@g @rveaikobrm@r, @gzu schieben@g.
+...
 \end{lstlisting}
 
 Mit --chek-alt Option:
 \begin{lstlisting}
+@SH$ make; ./build/twist.out res/twist5.txt | ./build/twist.out --untwist --check-alt@SH
+...
 @gEntweder musste der Brunnen sehr tief sein@g, @goder sie@g @yfiel@y|@yfeil@y @gsehr langsam@g; @gdenn sie hatte Zeit genug@g, @gsich beim Fallen umzusehen und sich zu wundern@g, @gwas nun wohl geschehen würde@g. @gZuerst@g @yversuchte@y|@yvertusche@y @gsie hinunter zu sehen@g, @gum zu wissen wohin sie käme@g, @gaber es war zu dunkel etwas zu erkennen@g. @gDa besah sie die Wände des Brunnens und bemerkte@g, @gdaß sie mit@g @rKkercnhehäüncsn@r @gund Bücherbrettern bedeckt waren@g; @ghier und da erblickte sie Landkarten und Bilder@g, @gan Haken aufgehängt@g. @gSie nahm im@g @rVbrfilelaoen@r @gvon einem der Bretter ein@g @rTöpchfen@r @gmit der@g @yAufschrift@y|@yAuffrischt@y: „@gEingemachte Apfelsinen@g“, @gaber zu ihrem großen Verdruss war es leer@g. @gSie wollte es nicht fallen lassen@g, @gaus@g @yFurcht@y|@yFrucht@y @gJemand unter sich zu töten@g; @gund es gelang ihr@g, @ges in einen@g @yandren@y|@yandern@y @gSchrank@g, @gan dem sie@g @rvrbeiokam@r, @gzu schieben@g.
+...
 \end{lstlisting}
 
 \pagebreak

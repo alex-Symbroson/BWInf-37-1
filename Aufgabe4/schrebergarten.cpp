@@ -9,8 +9,9 @@ const char *helpStr =
     "Usage: %s [FILE] [OPTIONS]\n"
     "Uses FILE as input (defaults to \"res/schrebergaerten.txt\")\n"
     "\nOptions:\n"
-    "  --debug   shows every permutation result\n"
-    "  --help    this help\n";
+    "  --circuit=[i]  runs circuit specified with i. before\n"
+    "  --debug        shows every permutation result\n"
+    "  --help         this help\n";
 
 
 
@@ -225,7 +226,7 @@ void permut(Rect **r, uint end) {
 
 int main(int argc, const char *argv[]) {
     FILE *fp = NULL;
-    uint i;
+    uint i, cnum = -1;
 
     // Argumente einlesen
     for (i = 1; i < (uint)argc; i++) {
@@ -235,6 +236,13 @@ int main(int argc, const char *argv[]) {
         } else if (!strcmp(argv[i], "--help")) {
             help(*argv);
             return 0;
+
+        } else if (!strncmp(argv[i], "--circuit=", 10)) {
+            if (sscanf(argv[i] + 10, "%u", &cnum) != 1) {
+                error("invalid syntax %s", argv[i]);
+                help(*argv);
+                return 1;
+            }
 
         } else if (*argv[i] == '-') {
             error("unknown option %s", argv[i]);
@@ -264,6 +272,7 @@ int main(int argc, const char *argv[]) {
         opt = gardens.back();
         gardens.pop_back();
 
+        if (cnum != (uint)-1 && cnum != opt->h) continue;
         printf("\n-- %i: ---------------------\n", opt->h);
 
         // wende ggT an

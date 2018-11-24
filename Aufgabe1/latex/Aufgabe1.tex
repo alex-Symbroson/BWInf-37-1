@@ -35,6 +35,7 @@
 \definecolor{clgreen}{rgb}{0,0.6,0}
 \definecolor{clgrey}{gray}{0.5}
 \definecolor{clmauve}{rgb}{0.58,0,0.82}
+\definecolor{clorange}{rgb}{1.0, 0.49, 0.0}
 \definecolor{clgray}{gray}{0.95}
 \lstset{
     columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
@@ -46,7 +47,11 @@
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
     literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
-    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1,
+    moredelim=**[is][\color{clgrey}]{@SH}{@SH},
+    moredelim=**[is][\color{red}]{@r}{@r},
+    moredelim=**[is][\color{clgreen}]{@g}{@g},
+    moredelim=**[is][\color{clorange}]{@y}{@y}
 }
 
 % Diese beiden Pakete müssen als letztes geladen werden
@@ -107,21 +112,21 @@ Nachdem die Existenz eines Superstar ermittelt wurde, erfolgt eine entsprechende
 \pagebreak
 \section{Beispiele}
 \subsection{superstar1.txt}
-Ausgabe:
 \begin{lstlisting}
+@SH$ make run ARGS="res/superstar1.txt"@SH
 Names: 0:Selena 1:Justin 2:Hailey
 
 Star User Follows Cost | Sum
    0    1    true    1 |   1
    1    2   false    1 |   2
 
-Suspected star: Justin
+@ySuspected star: Justin@y
 
 Star User Follows Cost | Star User Follows Cost | Sum
    1    0   false    1 |    0    1    true    0 |   3
    1    2   false    0 |    2    1    true    1 |   4
 
-Justin is the superstar!
+@gJustin is the superstar!@g
 
 Persons:    3
 Price:      4€
@@ -132,8 +137,8 @@ Estimation (on success):
 \end{lstlisting}
 
 \subsection{superstar3.txt}
-Ausgabe:
 \begin{lstlisting}
+@SH$ make run ARGS="res/superstar3.txt"@SH
 Names: 0:Edsger 1:Jitse 2:Jorrit 3:Peter 4:Pia 5:Rineke 6:Rinus 7:Sjoukje
 
 Star User Follows Cost | Sum
@@ -145,13 +150,13 @@ Star User Follows Cost | Sum
    1    6   false    1 |   6
    1    7   false    1 |   7
 
-Suspected star: Jitse
+@ySuspected star: Jitse@y
 
 Star User Follows Cost | Star User Follows Cost | Sum
    1    0    true    1 |
 
-Termination due to (1:Jitse) (0:Edsger)
-There is no superstar in this group.
+@yTermination due to (1:Jitse) (0:Edsger)@y
+@rThere is no superstar in this group.@r
 
 Persons:    8
 Price:      8€
@@ -262,22 +267,22 @@ int main(int argc, const char* argv[]) {
         "Star User Follows Cost | Sum\n",
         first->name);
 
-    // validiere Star
-    for (User& b: users)
-        if (&b != first &&
-            (follows(*first, b, true) || !follows(b, *first, false))) {
-            printf(
-                "\n\nTermination due to (%i:%s) (%i:%s)", first->id,
-                first->name, b.id, b.name);
-            break;
-        }
+        // validiere Star
+        for (User& b: users)
+            if (&b != first &&
+                (follows(*first, b, true) || !follows(b, *first, false))) {
+                printf(
+                    "\n\n\033[0;33mTermination due to (%i:%s) (%i:%s)\033[0;31m",
+                    first->id, first->name, b.id, b.name);
+                break;
+            }
 
 
-    // Ausgabe
-    if (stars == 1)
-        printf("\n\033[0;32m%s is the superstar!\033[0;37m\n", first->name);
-    else
-        printf("\n\033[0;33mThere is no superstar in this group.\033[0;37m\n");
+        // Ausgabe
+        if (stars == 1)
+            printf("\n\033[0;32m%s is the superstar!\033[0;37m\n", first->name);
+        else
+            printf("\n\033[0;31mThere is no superstar in this group.\033[0;37m\n");
 
     printf(
         "\nPersons:%5i\nPrice:  %5i€\n"
