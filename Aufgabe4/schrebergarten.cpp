@@ -1,8 +1,4 @@
 
-/*
- *
- */
-
 // Includes
 #include "../base/base.hpp"
 
@@ -132,7 +128,7 @@ void printGardens(Rect **list, uint w, uint h) {
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             if (out[y][x]) {
-                printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
+                printf("\033[30;%um%2u", out[y][x] % 8 + 100, out[y][x]);
             } else
                 printf("\033[0;90m 0");
         }
@@ -303,7 +299,7 @@ int main(int argc, const char *argv[]) {
 
         // Ausgabe
         printf(
-            "min: %u x %u = %u\n", maxW * opt->x, maxH * opt->y,
+            "min: %um x %um = %um²\n", maxW * opt->x, maxH * opt->y,
             minA * opt->x * opt->y);
 
         printGardens(order, maxW, maxH);

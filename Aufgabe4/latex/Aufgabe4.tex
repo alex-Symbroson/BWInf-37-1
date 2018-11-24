@@ -1,4 +1,5 @@
 \documentclass[a4paper,10pt,ngerman]{scrartcl}
+\usepackage{arev}
 \usepackage{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8x]{inputenc}
@@ -30,18 +31,28 @@
 % Für Quelltext
 \usepackage{listings}
 \usepackage{color}
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{clorange}{rgb}{1.0, 0.49, 0.0}
+\definecolor{clgreen}{rgb}{0,0.6,0}
+\definecolor{clgrey}{gray}{0.5}
+\definecolor{clmauve}{rgb}{0.58,0,0.82}
+\definecolor{clgray}{gray}{0.95}
 \lstset{
-    keywordstyle=\color{blue}, commentstyle=\color{mygreen},
-    stringstyle=\color{mymauve}, rulecolor=\color{black},
-    basicstyle=\footnotesize\ttfamily, numberstyle=\tiny\color{mygray},
-    captionpos=b, keepspaces=true, numberfirstline=false,
+    columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
+    backgroundcolor = \color{clgray}, keywordstyle=\color{blue},
+    commentstyle=\color{clgreen}, stringstyle=\color{clmauve},
+    rulecolor=\color{black}, basicstyle=\footnotesize\ttfamily,
+    numberstyle=\tiny\color{clgrey},
+    captionpos=b, keepspaces=true, numberfirstline=false, breaklines=true,
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
     language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
     {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+    {²}{{\unichar{"00B2}}}1,
+    moredelim=*[is][\color{red}]{@r}{@r}, moredelim=*[is][\color{green}]{@g}{@g},
+    moredelim=*[is][\color{blue}]{@b}{@b}, moredelim=*[is][\color{clgray}]{@h}{@h},
+    moredelim=*[is][\color{clorange}]{@y}{@y}, moredelim=*[is][\color{magenta}]{@m}{@m},
+    moredelim=*[is][\color{turkis}]{@t}{@t}, moredelim=*[is][\color{white}]{@w}{@w},
+    moredelim=*[is][\color{clgrey}]{@n}{@n}, moredelim=*[is][\color{black}]{@x}{@x}
 }
 
 % Diese beiden Pakete müssen als letztes geladen werden
@@ -69,52 +80,109 @@
 \section{Lösungsidee}
 Ziel ist es, jedes Rechteck möglichst optimal in ein größeres einzuordnen. Da jedes Rechteck möglichst wenig Platz zu seinem Nachbarn haben soll, kann man damit anfangen, jedes Reckteck der Reihe nach neben das Vorherige zu platzieren.
 
-Im zweiten Schritt limitiert man die Breite des Rechtecks um einen Garten und sortiert so lange Gärten ein, bis die Breite des Rechtecks von einem Garten überschritten wird. Dann muss dieser Garten auf der Y-Achse verschoben und von vorn alle X-Werte ausprobiert werden. Man muss nun auch darauf achten, dass sich der Garten nicht mit anderen Gärten überschneidet.
+Im zweiten Schritt limitiert man die Breite des Rechtecks um einen Garten und sortiert so lange Gärten ein, bis die Breite des Rechtecks von einem Garten überschritten wird. Dann muss dieser Garten auf der Y-Achse verschoben und von vorn alle X-Werte ausprobiert werden, ohne dass sich der Garten nicht mit anderen Gärten überschneidet.
 
-Sind alle Gärten eingeordnet, wird jeweils die Fläche des entstandenen Rechteckes berechnet und ggf. das Minimum überschrieben.
+Nachdem alle Gärten eingeordnet sind, wird die Fläche des entstandenen Rechteckes berechnet und ggf. das Minimum überschrieben. Das wird solange wiederholt, bis das Reckteck so breit wie der breiteste Garten ist, denn schmaler kann das Rechteck nicht sein.
 
-Wiederholt wird das Ganze solange, bis das Reckteck so breit wie der breiteste Garten ist, denn schmaler kann das Rechteck nicht sein.
-
-Dies allein reicht aber micht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt.
-
-Es werden also alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
+Dies allein reicht aber micht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt. Deswegen müssen alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert werden. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
 
 \section{Umsetzung}
-Jeder Garten besitzt Imformationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Darstellung wieder als Klasse mit genannten Eigenschaften.
+Jeder Garten besitzt Imformationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Abstrahierung wieder als Klasse mit den genannten Eigenschaften.
 
-Um während des gesamten Einsortierungssprozesses Zeit zu sparen, wird bereits während dem Einlesen der Gartenlisten der ggT von Höhe und Breite einer Gartenliste berechnet (da das Assoziativgesetz beim ggT gilt, einfach umzusetzen.) um dann alle Höhen und Breiten durch diese teilen zu können.
+Um während des gesamten Einsortierungssprozesses Zeit zu sparen, wird bereits während des Einlesens der Gartenlisten der ggT von Höhe und Breite einer Gartenliste berechnet, um dann alle Höhen und Breiten durch dieses teilen zu können.
 
-Bei der Permutation erfolgt der Tausch und erneute Permutation der verbleibenden Elemente nur, falls die Größe der Gärten sich unterscheidet. Dadurch kann eine erhebliche Menge an zu testenden Permutationen eingespart werden, je mehr Gärten und je mehr gleiche es gibt.
+Bei der Permutation erfolgt der Tausch und erneute Permutation der verbleibenden Elemente nur, falls die Größe der Gärten sich unterscheidet. Dadurch kann mitunter eine erhebliche Menge an zu testenden Permutationen eingespart werden, je mehr Gärten und je mehr gleiche es gibt.
 
 Die Prüfung der Gartenpermutationen erfolgt wie bereits in der Lösungsidee beschrieben.
-Die Gärten werden nacheinander in das Rechteck eingefügt und solange in X und Y-Richtung bewegt, bis sie weder überstehen noch mit einem anderen Garten kollidieren. Die Höhe des Rechtecks entspricht der höchsten Y-Koordinate (+Höhe) eines Gartens, da ja die Breite für jeden Durchlauf fest definiert ist.
+Die Gärten werden nacheinander in das Rechteck eingefügt und solange in X und Y-Richtung bewegt, bis sie weder überstehen noch mit einem anderen Garten kollidieren. Die Breite des Rechtecks ist hierbei für jeden Durchlauf fest definiert, die Höhe entspricht der höchsten Y-Ausdehnung eines Gartens nach vollständiger Einsortierung.
 
-Wurde ein geringerer Flächeninhalt als zuvor gefunden werden die Garteneigenschaften in der aktuellen Reihenfolge in eine extra Liste kopiert, um diese später an der richtigen Position ausgeben zu können.
+Wurde ein geringerer Flächeninhalt als zuvor gefunden werden die Garteneigenschaften in der aktuellen Reihenfolge in eine weitere Liste kopiert, um diese später ggf. ausgeben zu können.
 
-Falls der debug-Modus eingeschaltet ist, werden alle möglichen Gartenkonstellationen ausgegeben. Dabei muss beachtet werden, dass diese ebenfalls durch die ggT's geschrumpft wurden und die Seitenverhältnisse möglicherweise nicht mehr stimmen, falls sich die ggT's unterscheiden.
+Die Ausgabe erfolgt in der Konsole mit per Escape-Sequenz gefärbten Feldern. (nähere Informationen im README.txt) Es muss beachtet werden, dass die Größe weiterhin durch das ggT geteilt ist, wodurch das Seitenverhältnis möglicherweise nicht mehr stimmt. Die reellen Maße sowie der Flächeninhalt stehen jedoch zum Vergleich über der Ausgabe.
 
 \section[Beispiele]{Beispiele - schrebergaerten.txt}
+\subsection{Liste 0.}
+\begin{lstlisting}
+-- 0: ---------------------
+min: 45m x 40m = 1800m²
+@g 2 2 2 2 2 2@r 1 1 1
+@g 2 2 2 2 2 2@r 1 1 1
+@g 2 2 2 2 2 2@r 1 1 1
+@y 3 3 3 3@n 0 0@r 1 1 1
+@y 3 3 3 3@n 0 0@r 1 1 1
+@y 3 3 3 3@b 4 4 4 4 4
+@y 3 3 3 3@b 4 4 4 4 4
+@y 3 3 3 3@b 4 4 4 4 4@x
+\end{lstlisting}
 
-\subsection[Sonderfall 1]{Sonderfall 1 - Liste 4.}
+\subsection{Liste 1.}
+\begin{lstlisting}
+-- 1: ---------------------
+min: 55m x 35m = 1925m²
+@r 1 1 1 1 1@g 2 2 2 2 2 2
+@r 1 1 1 1 1@g 2 2 2 2 2 2
+@r 1 1 1 1 1@g 2 2 2 2 2 2
+@y 3 3 3 3 3@b 4 4 4 4 4@n 0
+@y 3 3 3 3 3@b 4 4 4 4 4@n 0
+@y 3 3 3 3 3@b 4 4 4 4 4@n 0
+@y 3 3 3 3 3@n 0 0 0 0 0 0@x
+\end{lstlisting}
+
+\subsection{Liste 2.}
+\begin{lstlisting}
+-- 2: ---------------------
+min: 9m x 7m = 63m²
+@r 1 1 1 1 1 1@y 3 3 3
+@r 1 1 1 1 1 1@g 2 2@n 0
+@r 1 1 1 1 1 1@g 2 2@n 0
+@b 4 4 4 4@m 5 5 5 5@n 0
+@b 4 4 4 4@m 5 5 5 5@n 0
+@b 4 4 4 4@m 5 5 5 5@n 0
+@b 4 4 4 4@m 5 5 5 5@n 0@x
+\end{lstlisting}
+
+\subsection{Liste 3.}
+\begin{lstlisting}
+-- 3: ---------------------
+min: 9m x 6m = 54m²
+@y 3 3 3 3 3 3@g 2 2 2
+@b 4 4 4 4 4@n 0@g 2 2 2
+@b 4 4 4 4 4@r 1 1 1 1
+@m 5 5 5 5 5@r 1 1 1 1
+@m 5 5 5 5 5@r 1 1 1 1
+@m 5 5 5 5 5@r 1 1 1 1@x
+\end{lstlisting}
+
+\subsection{Liste 4 - Sonderfall}
 Es kann durchaus sein, dass alle Gärten die gleiche Höhe oder Breite haben. Dadurch ist die optimale Anordnung in W-O bzw N-S Richtung. Das ist auch der Grund, warum man bei der maximalen Breite des Rechtecks keine Abstriche machen darf.
+\begin{lstlisting}
+-- 4: ---------------------
+min: 26m x 1m = 26m²
+@r 1 1 1 1 1@g 2 2 2 2 2@y 3 3 3 3 3 3@b 4 4 4 4 4@m 5 5 5 5 5@x
+\end{lstlisting}
+
 
 \section{Quellcode}
 
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[language=C++]
 
-// Includes
 /* ... */
+
 
 struct Rect {
     uint x, y, w, h, i;
 
-    /* ... */
+    Rect(uint X, uint Y, uint W, uint H, uint I):
+        x(X), y(Y), w(W), h(H), i(I) {}
+
+    void assign(Rect *v) {
+        x = v->x; y = v->y; w = v->w; h = v->h; i = v->i;
+    }
 };
 
-// enthält {ggT(w1, .., wn), ggT(h1, .., hn), minw, i, n} einer Gartenliste
-Rect *opt,
-    // enthält Zeiger auf Gärten in optimaler Reihenfolge
-    **order;
+
+Rect *opt,   // enthält {ggT(w1, .., wn), ggT(h1, .., hn), minw, i, n} einer Gartenliste
+    **order; // enthält Zeiger auf Gärten in optimaler Reihenfolge
 
 // Rechteck:
 uint minA, // Minimalfläche
@@ -128,59 +196,8 @@ bool debug = false;
 list<list<Rect *>> gardenList;
 
 
-uint ggt(uint x, uint y) {
-    /* ...*/
-}
+/* ... */
 
-void freeSchrebergaerten() {
-    /* ... */
-}
-
-bool initSchrebergaerten(FILE *fp) {
-    uint w, h, l, c, n, dx, dy, minw;
-    char line[1024], *lp;
-    bool read = false;
-
-    // Erwartet Daten im Format "[n].\n[w1] x [h1], ..., [wn] x [hn]."
-    while (fgets(line, 1024, fp) != NULL) {
-        // lese Gartenliste wenn zuvor Listennummer gefunden ("[n].\n")
-        if (read) {
-            lp = line;
-            n = minw = dx = dy = 0;
-            gardenList.push_back({});
-
-            // scannt Zeile nach [w] x [h] Paar
-            while (*lp && (l = sscanf(lp, " %u x %u", &w, &h)) != (uint)EOF) {
-                // Speichert Garten
-                if (l == 2) {
-                    gardenList.back().push_back(new Rect(0, 0, w, h, n++));
-                    // berechnet ggT (Assoziativgesetz gilt)
-                    dx = dx ? ggt(dx, w) : w;
-                    dy = dy ? ggt(dy, h) : h;
-                }
-
-                // gehe zu nächstem Garten oder Zeilenende
-                while (*lp)
-                    if (*lp++ == ',') break;
-            }
-
-            // speichere zusätzliche Gartenlisteninformationen
-            // (ggt(w), ggt(h), minw, maxh, n)
-            gardenList.back().push_back(new Rect(dx, dy, minw, c, n));
-            dx = dy = 0;
-            read    = false;
-
-            // prüfe Zeile auf "[n].\n" ([n] -> index)
-        } else {
-            c  = 0;
-            lp = line;
-            while (isdigit(*lp)) c = 10 * c + *lp++ - '0';
-            read = lp[0] == '.' && lp[1] == '\n';
-        }
-    }
-
-    return false;
-}
 
 // Ausgabe
 void printGardens(Rect **list, uint w, uint h) {
@@ -196,7 +213,7 @@ void printGardens(Rect **list, uint w, uint h) {
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             if (out[y][x]) {
-                printf("\033[30;%um%2u", out[y][x] % 9 + 99, out[y][x]);
+                printf("\033[30;%um%2u", out[y][x] % 8 + 100, out[y][x]);
             } else
                 printf("\033[0;90m 0");
         }
@@ -205,6 +222,7 @@ void printGardens(Rect **list, uint w, uint h) {
     printf("\n");
 }
 
+// Sortiert Gartenpermutation in Rechteck
 void testGardens(Rect **gds) {
     uint i, j,          // Zähler
         n = 1 + opt->i, // ersten n Rechtecke ergeben Maximalbreite
@@ -268,9 +286,6 @@ void testGardens(Rect **gds) {
 }
 
 
-inline void swap(Rect **list, uint a, uint b) {
-    /* ... */
-}
 
 // Permutation
 void permut(Rect **r, uint end) {
@@ -283,31 +298,22 @@ void permut(Rect **r, uint end) {
         for (i = 0; i < end; i++) {
             // nicht tauschen und permutieren wenn Größe übereinstimmt
             if (r[i]->w != r[end]->w || r[i]->h != r[end]->h) {
-                swap(r, i, end);
+                swap(r[i], r[end]);
                 permut(r, end - 1);
-                swap(r, i, end);
+                swap(r[i], r[end]);
             }
         }
     }
 }
 
 
+
 int main(int argc, const char *argv[]) {
     FILE *fp = NULL;
     uint i;
 
-    // Argumente einlesen
+    // Argumente und Eingabedatei einlesen
     /* ... */
-
-    // Default Datei öffnen falls nötig
-    if (fp == NULL && tryOpen("res/schrebergaerten.txt", fp)) goto error;
-
-    // Datei Einlesen & Parsen
-    if (initSchrebergaerten(fp)) {
-        error("initialization failed");
-        goto error;
-    }
-    fclose(fp);
 
     // jede Gartenliste aus Eingabedatei behandeln
     for (auto &gardens: gardenList) {
@@ -352,7 +358,7 @@ int main(int argc, const char *argv[]) {
 
         // Ausgabe
         printf(
-            "min: %u x %u = %u\n", maxW * opt->x, maxH * opt->y,
+            "min: %um x %um = %um²\n", maxW * opt->x, maxH * opt->y,
             minA * opt->x * opt->y);
 
         printGardens(order, maxW, maxH);
@@ -367,6 +373,7 @@ error:
     fclose(fp);
     return 1;
 }
+
 
 \end{lstlisting}
 
