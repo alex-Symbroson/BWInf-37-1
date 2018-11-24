@@ -1,13 +1,14 @@
 \documentclass[a4paper,10pt,ngerman]{scrartcl}
+\usepackage{arev}
 \usepackage{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8x]{inputenc}
 \usepackage[a4paper,margin=2.5cm]{geometry}
 
 % Die nächsten drei Felder bitte anpassen:
-\newcommand{\Name}{Symbroson} % Teamname oder eigenen Namen angeben
-\newcommand{\TeamId}{00165}                       % Team-ID aus dem PMS
-\newcommand{\Aufgabe}{Junior 2: Baywatch} % Aufgabennummer und -name
+\newcommand{\Name}{Symbroson}           % Teamname oder eigenen Namen angeben
+\newcommand{\TeamId}{00165}             % Team-ID aus dem PMS
+\newcommand{\Aufgabe}{Aufgabe 2: Twist} % Aufgabennummer und -name
 
 % Kopf- und Fußzeilen
 \usepackage{scrlayer-scrpage}
@@ -16,6 +17,7 @@
 \cfoot{\thepage}
 \chead{\Aufgabe}
 \ofoot{Team-ID: \TeamId}
+
 
 % Für mathematische Befehle und Symbole
 \usepackage{amsmath}
@@ -30,19 +32,32 @@
 % Für Quelltext
 \usepackage{listings}
 \usepackage{color}
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{clorange}{rgb}{1.0, 0.49, 0.0}
+\definecolor{clgreen}{rgb}{0,0.6,0}
+\definecolor{clgray}{gray}{0.5}
+\definecolor{clmauve}{rgb}{0.58,0,0.82}
+\definecolor{cllgray}{gray}{0.95}
 \lstset{
-    keywordstyle=\color{blue}, commentstyle=\color{mygreen},
-    stringstyle=\color{mymauve}, rulecolor=\color{black},
-    basicstyle=\footnotesize\ttfamily, numberstyle=\tiny\color{mygray},
-    captionpos=b, keepspaces=true, numberfirstline=false,
+    columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
+    backgroundcolor = \color{cllgray}, keywordstyle=\color{blue},
+    commentstyle=\color{clgreen}, stringstyle=\color{clmauve},
+    rulecolor=\color{black}, basicstyle=\footnotesize\ttfamily,
+    numberstyle=\tiny\color{clgray},
+    captionpos=b, keepspaces=true, numberfirstline=false, breaklines=true,
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
-    language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
-    {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+    literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1 {ä}{{\"a}}1 {ö}{{\"o}}1
+    {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {„}{{\unichar{"201E}}}1
+    {“}{{\unichar{"201C}}}1 {É}{{\unichar{"00C9}}}1 {À}{{\unichar{"00C0}}}1
+    {Ê}{{\unichar{"00CA}}}1 {Â}{{\unichar{"00C2}}}1 {Ñ}{{\unichar{"00D1}}}1,
+    moredelim=**[is][\color{red}]{@r}{@r},
+    moredelim=**[is][\color{clgreen}]{@g}{@g},
+    moredelim=**[is][\color{clorange}]{@y}{@y}
 }
+%console.log("ÉÀÊÂÑ".replace(/./g,function(c) {
+%    return '{' + c + '}{{\\unichar{"' + %("0000" +
+%    c.charCodeAt(0).toString(16)).slice(-4).toUpperCase() + '}}}1 ';
+%}))
 
 % Diese beiden Pakete müssen als letztes geladen werden
 \usepackage{hyperref} % Anklickbare Links im Dokument
@@ -66,270 +81,312 @@
 \begin{document}
 
 \maketitle
-\vspace{5\baselineskip}
+\vspace{7\baselineskip}
 \tableofcontents
-\clearpage
+\pagebreak
 
 
 
 \newsection{Lösungsidee}
 \vspace{1\baselineskip}
-Bei jedem Wort sind Anfangsbuchstabe, Endbuchstabe und die Buchstabenanzahl gegeben. Man kann also durch diese Eigenschaften die Wortliste bereits auf wenige mögliche Wörter einschränken.
+Bei jedem Wort sind Anfangsbuchstabe, Endbuchstabe und die Buchstabenanzahl gegeben. Man kann also durch diese Eigenschaften bei jedem getwisteten Wort die Wortliste bereits auf wenige mögliche Wörter einschränken.
 
 Die zweite Auswahl erfolgt durch den Vergleich der Buchstaben dazwischen, sofern das Wort länger als 3 Zeichen ist, da sonst keine Buchstaben vertauscht worden sein können. Somit kann in den meisten Fällen das gesuchte Wort gefunden und (grün) ausgegeben werden. Falls nicht, wird das Wort unverändert (rot), bzw. wenn mehrere Wörter möglich sind, werden diese alle (gelb, durch '|' getrennt) ausgegeben. Alle nicht-alphabetischen Zeichen werden weiß notiert.
 
 
 
+\pagebreak
 \newsection{Umsetzung}
-
 
 \newsubsection{Wortlisten-Vorsortierung}
 
 \newsubsubsection{Per Wortlänge} %87960 2144215
 Aufgrund der Großen Anzahl an Wörtern wäre es vermessen bei jedem Wort die gesamte Liste zu durchsuchen. Deshalb kann man bereits beim Einlesen der Wortliste nach Wortlänge sortieren. Somit würden aus ca. 312.000 zu durchsuchenden Wörtern maximal etwa 39.000 bei einer Wortlänge von 12.
-Da die längsten Wörter 34 Buchstaben lang sind gehe ich großzügig von einer maximalen Wortlänge von 40 aus.
+Die maximal zu betrachtende Wortlänge in der Wortliste beträgt 34, wird im Programm aber vorsichtshalber auf 40 erhöht. Das Maximum kann auch dynamisch ermittelt werden, wurde aber der Einfachheit halber nicht umgesetzt.
 
 \newsubsubsection{Per Wortlänge und Anfangsbuchstabe} %95051  149209
 Man kann dies allerdings noch Erweitern, indem man den Anfangsbuchstaben ebenfalls in die Erstauswahl mit einbezieht. Dabei entstehen maximal ca. 6000 Einträge für 12 Buchstaben bei dem Anfangsbuchstaben a bzw. A. Dies macht den Wortfindeprozess bei twist5.txt fast 15x schneller (ohne Ausgabe) als ohne. Deshalb ist dies auch die Variante meiner Einsendung.
 
 \newsubsubsection{Per Wortlänge, Anfangs- und Endbuchstabe} %95502   57738
-In einer dritten Stufe kann man dann auch noch den Endbuchstaben betrachten. Somit könnte man die maximal zu durchsuchenden Wörter auf etwa 1500 einschränken. Auch hier werden die Wörter im Verhältnis zur Variante mit nur Länge und Anfangsbuchstabe etwa 3x schneller gefunden, allerdings entstehen hier schon eine Menge unbenutzter Listen, die dementsprechend unnötig Speicher blockieren.
+In einer dritten Stufe kann man dann auch noch den Endbuchstaben betrachten. Somit könnte man die maximal zu durchsuchenden Wörter auf etwa 1500 einschränken. Auch hier werden die Wörter im Verhältnis zur Variante mit nur Länge und Anfangsbuchstabe etwa 3x schneller gefunden, allerdings entstehen hier schon eine Menge unbenutzter Listen, die dementsprechend unnötig Speicher blockieren, Weshalb im Programm Variante 2 Umgesetzt wurde.
 
 
+\pagebreak
 \newsubsection{Wortentdrehung}
 
 \newsubsubsection{Findung}
-Die Eingabedatei wird zeilenweise eingelesen und behandelt. Für jede Zeile werden dann zunächst alle Sonderzeichen und Wörter bestehend aus registrierten Zeichen (Alphabet und Umlaute äöüß) extrahiert. Sonderzeichen werden sofort ausgegeben und Wörter werden zunächst auf die Länge geprüft. Ist es kürzer als 4 Zeichen wird es ebenfalls sofort ausgegeben da es keine vertauschten Buchstaben geben kann, ist es zu lang, kann es nicht in der Wortliste verzeichnet worden sein.
+Von der Eingabedatei werden abwechselnd Sonderzeichen und alphabetische Zeichen eingelesen und bei jedem Leerzeichen das eingelesene Wort behandelt, wobei erstere sofort ausgegeben und Wörter zunächst auf die Länge geprüft werden. Ist es kürzer als 4 Zeichen oder länger als die maximal definierte Länge, wird ebenfalls sofort ausgegeben, da es keine vertauschten Buchstaben geben bzw. nicht in der Wortliste verzeichnet worden sein kann.
 
 \newsubsubsection{Erstauswahl}
 Ist all dies nicht der Fall, wird dass Wort in der Wortliste gesucht. Dabei werden zuerst Anfangs- und Endbuchstaben verglichen. Bei den Anfangsbuchstaben muss beachtet werden, dass ein in der Wortliste klein geschriebenes Wort im Text großgeschrieben sein kann, wenn es am Satzanfang steht, allerdings kann ein inder Wortliste groß geschriebenes Wort niemals klein geschrieben sein.
 
 \newsubsubsection{Zeichenauszählung}
-Nun werden die inneren Zeichen miteinander verglichen. Dabei werden in einem extra Buffer alle Buchstaben aus dem Wortlisten-Wort aus dem Eingabewort überschrieben, um sicherzustellen, dass die Vorkommensanzahl jedes Buchstaben im Wort übereinstimmt. So wird der Vorgang entweder abgebrochen, wenn alle Buchstaben ersetzt wurden, oder wenn ein Zeichen nicht im Eingabewort gefunden werden konnte.
+Nun werden die inneren Zeichen miteinander verglichen. Dabei werden in einer Kopie der Zeichenkette alle Buchstaben des Wortlisten-Wortes aus dem Eingabewort überschrieben, um sicherzustellen, dass die Vorkommensanzahl jedes Buchstabens im Wort übereinstimmt. So wird der Vorgang entweder abgebrochen, wenn alle Buchstaben ersetzt wurden, oder wenn ein Zeichen nicht mehr im Eingabewort gefunden werden konnte.
 
 \newsubsubsection{Mehrere Treffer}
-Wurden alle Buchstaben gefunden, kann das gefundene Wort theoretisch ausgegeben werden. Allerdings kann ein verdrehtes Wort mehrere Bedeutungen haben, die bestenfalls alle dementsprechend hervorgehoben ausgegeben werden sollen. Dafür wird das wort in einen Zwischenspeicher kopiert und das Wort erst im nächsten durchlauf, wenn ein weiteres mögliches Wort gefunden wurde, oder nach der Suche ausgegeben wird. Des weiteren kann man dies dafür nutzen um versehentliche Dopplungen in der Wortliste (die leider vorkamen) auf einfachem Wege zumindest teilweise zu überspringen.
+Wurden alle Buchstaben gefunden, kann das gefundene Wort theoretisch ausgegeben werden. Allerdings kann ein verdrehtes Wort mehrere Bedeutungen haben, die bestenfalls alle dementsprechend hervorgehoben ausgegeben werden sollen. Dafür wird das Wort in einen Zwischenspeicher kopiert und erst im nächsten Durchlauf, wenn ein weiteres mögliches Wort gefunden wurde oder nach der Suche, ausgegeben. Des weiteren kann man dies dafür nutzen um versehentliche Dopplungen in der Wortliste (die leider vorkamen) auf einfachem Wege zumindest teilweise zu überspringen.
 
 \newsubsubsection{Ausgabe}
-Wenn nach der Suche nur ein Wort gefunden wurde, ist das gefundene Wort im Zwischenspeicher der einzige Treffer und wird grün ausgegeben. Sind mehrere gefunden wird das Wort getrennt von einem '|' gelb ausgegeben, und falls es gar keine Übereinstimmung gab, wird das Eingabewort unverändert in rot ausgegeben.
+Wenn nach der Suche nur ein Wort gefunden wurde, ist das gefundene Wort im Zwischenspeicher der einzige Treffer und wird grün ausgegeben. Sind mehrere gefunden worden, wird das Wort getrennt von einem '|' gelb und bei keiner Übereinstimmung unverändert in rot ausgegeben.
 
 
 
+\pagebreak
 \newsection{Beispiele}
+
+%function fmt(s){
+%	var last;
+%	return s.replace(/\x1b\[0;(\d\d)m/g, function(m,i){
+%		return last = {"37":last,"32":"@g","31":"@r","33":"@y"}[i]
+%	}).replace(/(\@.)(\s*)\1/g,"$2")
+%}
 
 \vspace{1\baselineskip}
 \subsection[twist1.txt]{twist1.txt | enttwist.txt}
 In diesem Beispiel wurden anderssprachige Wörter (hier Englisch) verwendet. Diese können natürlich zumeist nicht gefunden werden oder führen sogar zu deutschen Wörtern mit einer völlig anderen Bedeutung. Das lässt sich leider nur schwer verhindern.
 
+\begin{lstlisting}
+@gDer@g @rTiswt@r
+(@gEnglisch@g @rtwist@r = @gDrehung@g, @gVerdrehung@g)
+@gwar ein Modetanz im@g 4/4-@gTakt@g,
+@gder in den@g @yführen@y|@yfrühen@y 1960@ger Jahren populär
+wurde und zu
+Rock@g'@gn@g'@rRlol@r, @rRhyhtm@r @gand Blues oder spezieller@g
+@rTiwst@r-@gMusik getanzt wird@g.
+\end{lstlisting}
 
 \vspace{1\baselineskip}
 \subsection{twist2.txt}
-Hier ist 'wegbegeben' das einzige nicht gefundene Wort. Man müsste dem Programm beibringen Wörter zu konjugieren, zu steigern, die Mehrzahl zu bilden etc. - Also die deutsche Sprache beibringen, um wirklich alle Wörter erkennen zu können. Dies kann höchstens durch extremes Hardcoding oder durch lernfähige Algorithmen erreicht werden, was beides hier nicht geeignet ist.
+Hier ist 'wegbegeben' das einzige nicht gefundene Wort. Man müsste entweder all diese Worte der Wortliste hinzufügen oder dem Programm beibringen Wörter zu konjugieren, zu steigern, die Mehrzahl zu bilden etc. - Also die deutsche Sprache beibringen, um wirklich alle Wörter erkennen zu können. Dies kann höchstens durch extremes Hardcoding oder durch lernfähige Algorithmen erreicht werden, was beides hier nicht geeignet ist.
 
+\begin{lstlisting}
+@gHat der alte Hexenmeister sich doch einmal@g @rwgegebeben@r! @gUnd nun sollen seine Geister auch nach meinem Willen leben@g. @gSeine Wort und Werke merkt ich und den Brauch@g, @gund mit Geistesstärke tu ich Wunder auch@g.
+\end{lstlisting}
 
 \vspace{1\baselineskip}
 \subsection{twist3.txt}
-Auch hier wurden französische Ausdrücke verwendet. Das eigentliche Problem besteht aber aus den zusammengesetzten Substantiven. Auch in diesem Fall lässt sich nicht ohne weiteres feststellen, ob dies der Fall ist und wo man diese trennen müsste, um auf die Basiswörter schließen zu können.
+Auch in diesem Fall wurden andersprachige (französische) Ausdrücke verwendet. Das eigentliche Problem besteht aber aus den zusammengesetzten Substantiven. Auch hier lässt sich nicht ohne weiteres feststellen, ob dies der Fall ist und wo man diese trennen müsste, um auf die Basiswörter schließen zu können.
 
+\begin{lstlisting}
+@gEin Restaurant@g, @gwelches a la@g @rcarte@r @yabrietet@y|@yarbeitet@y, @gbietet sein Angebot ohne eine vorher festgelegte@g @rMlefrnoiüeneghe@r @gan@g. @gDadurch haben die Gäste zwar mehr Spielraum bei der Wahl ihrer Speisen@g, @gfür das Restaurant entstehen jedoch zusätzlicher Aufwand@g, @gda weniger@g @rPaesrhgulneichnist@r @gvorhanden ist@g.
+\end{lstlisting}
 
 \vspace{1\baselineskip}
 \subsection{twist4.txt}
 Mit Eigennamen verhält es sich genauso wie bei den vorherigen Beispielen. Man bräuchte wohl noch einige Lexika mehr um Eigennamen mit in die Suche einzubeziehen.
 
+\begin{lstlisting}
+@rAtgusua@r @gAda@g @rBroyn Knig@r, @rCuotenss@r @gof@g @rLlvaceoe@r, @gwar eine britische Adelige und Mathematikerin@g, @gdie als die erste Programmiererin überhaupt gilt@g. @yBreites@y|@yBieters@y|@yBereits@y 100 @gJahre vor dem Aufkommen der ersten Programmiersprachen ersann sie eine Rechen@g-@gMechanik@g, @gder einige Konzepte moderner Programmiersprachen vorwegnahm@g.
+\end{lstlisting}
 
 \vspace{1\baselineskip}
 \subsection{twist5.txt}
-Altteutsch ist ebenso schwierig zu erkennen und eine weitere Wortliste vonnöten. Allerdings tretein einige Schreibweisen öfters auf. Die häufigsten Ersetzungen sind beispielsweise \lstinline{"ss"} zu \lstinline{"ß"} oder \lstinline{"t"} zu \lstinline{"th"}. Diese Abfrage kann optional in dem Programm durch die Flag \lstinline{--ckeck-alt} eingeschalten werden, da man standardmäßig von Hochdeutsch ausgeht und andernfalls woanders ungewollt Fehler entstehen können, die sonst nicht aufträten.
+Altteutsch ist ebenso schwierig zu erkennen und eine weitere Wortliste wäre vonnöten. Allerdings treten einige Ersetzungen vom Altdeutschen in die heutige Screibweise öfters auf. Die häufigsten sind beispielsweise \lstinline{"ß"} zu \lstinline{"ss"} oder \lstinline{"th"} zu \lstinline{"t"}. Diese Abfrage kann optional in dem Programm durch die \lstinline{--ckeck-alt} Flag eingeschalten werden, da man standardmäßig von Hochdeutsch ausgeht und andernfalls woanders ungewollt Fehler entstehen können, die sonst nicht aufträten.
 
+Ohne --chek-alt Option:
+\begin{lstlisting}
+@gEntweder@g @rmtßue@r @gder Brunnen sehr tief sein@g, @goder sie@g @yfiel@y|@yfeil@y @gsehr langsam@g; @gdenn sie hatte Zeit genug@g, @gsich beim Fallen umzusehen und sich zu wundern@g, @gwas nun wohl geschehen würde@g. @gZuerst@g @yversuchte@y|@yvertusche@y @gsie hinunter zu sehen@g, @gum zu wissen wohin sie käme@g, @gaber es war zu dunkel etwas zu erkennen@g. @gDa besah sie die Wände des Brunnens und bemerkte@g, @gdaß sie mit@g @rKhnckhcärüeesnn@r @gund Bücherbrettern bedeckt waren@g; @ghier und da erblickte sie Landkarten und Bilder@g, @gan Haken aufgehängt@g. @gSie nahm im@g @rVofrleaeibln@r @gvon einem der Bretter ein@g @rTcefpöhn@r @gmit der@g @yAufschrift@y|@yAuffrischt@y: „@gEingemachte Apfelsinen@g“, @gaber zu ihrem großen@g @rVrerduß@r @gwar es leer@g. @gSie wollte es nicht fallen lassen@g, @gaus@g @yFurcht@y|@yFrucht@y @gJemand unter sich zu@g @rtedtön@r; @gund es gelang ihr@g, @ges in einen@g @yandren@y|@yandern@y @gSchrank@g, @gan dem sie@g @rveaikobrm@r, @gzu schieben@g.
+\end{lstlisting}
 
+Mit --chek-alt Option:
+\begin{lstlisting}
+@gEntweder musste der Brunnen sehr tief sein@g, @goder sie@g @yfiel@y|@yfeil@y @gsehr langsam@g; @gdenn sie hatte Zeit genug@g, @gsich beim Fallen umzusehen und sich zu wundern@g, @gwas nun wohl geschehen würde@g. @gZuerst@g @yversuchte@y|@yvertusche@y @gsie hinunter zu sehen@g, @gum zu wissen wohin sie käme@g, @gaber es war zu dunkel etwas zu erkennen@g. @gDa besah sie die Wände des Brunnens und bemerkte@g, @gdaß sie mit@g @rKkercnhehäüncsn@r @gund Bücherbrettern bedeckt waren@g; @ghier und da erblickte sie Landkarten und Bilder@g, @gan Haken aufgehängt@g. @gSie nahm im@g @rVbrfilelaoen@r @gvon einem der Bretter ein@g @rTöpchfen@r @gmit der@g @yAufschrift@y|@yAuffrischt@y: „@gEingemachte Apfelsinen@g“, @gaber zu ihrem großen Verdruss war es leer@g. @gSie wollte es nicht fallen lassen@g, @gaus@g @yFurcht@y|@yFrucht@y @gJemand unter sich zu töten@g; @gund es gelang ihr@g, @ges in einen@g @yandren@y|@yandern@y @gSchrank@g, @gan dem sie@g @rvrbeiokam@r, @gzu schieben@g.
+\end{lstlisting}
 
+\pagebreak
 \newsection{Quellcode}
 
-\begin{lstlisting} %[frame=single]
-
-// Includes
+\begin{lstlisting}[language=C++]
 /* ... */
 
-using namespace std;
+#define MAXLEN 40 // maximale Wortlänge
+#define CHRCNT (26 + 10) // = 26 Buchstaben + 9 verwendete Umlaute + 1 für andere Sonderzeichen/Umlaute
 
-#define error(a, ...) \
-    fprintf(stderr, "\033[0;33m" a "\033[0;37m\n", ##__VA_ARGS__)
-
-#define MAXLEN 40       // maximale Wortlänge
-#define CHRCNT (26 + 5) // = lowercase + äöüß + 1 for others
 
 // speichert Wörter sortiert nach Länge
-forward_list<char*> wordMap[MAXLEN][CHRCNT];
+forward_list<wchar_t*> wordMap[MAXLEN][CHRCNT];
 
-bool tryOpen(const char* name, FILE*& fp) {
-    /* ... */
-}
+wchar_t uml[] = L"ÜÄÖßÉÀÊÂÑ";
+
 
 // gibt Zeichennummer zurück (nicht Zeichencode)
-uint8_t charNum(char* cp) {
-    static char lc;
-
-    if (*cp >= 'A' && *cp <= 'Z') return *cp - 'A';
-    if (*cp >= 'a' && *cp <= 'z') return *cp - 'a';
-
-    uint8_t sub = 0;           //  Ergebnis-Subtrahent
-    bool isSpec = *cp == *"ü"; // Status: ist Umlaut
-
-    // Umlaute sind nicht in ASCII enthalten, stattdessen bestehen sie aus zwei
-    // ASCII-Zeichen, wobei der erste (hier) bei alles gleich ist
-    if (isSpec || lc == *"ü") {
-        /* ... */
-    }
-    return CHRCNT - sub;
+uint charNum(wchar_t wc) {
+    /* ... */
 }
 
 // zählt Umlaute
-uint16_t cntUml(char* word, uint16_t len = -1) {
+uint cntUml(wchar_t* word, int len = -1) {
     /* ... */
 }
 
-void freeWordMap() {
-    /* ... */
-}
-
-bool initWordMap() {
-    FILE* fp;
-    char* line = NULL;
-    ssize_t read;
-    size_t len = 0;
-
-    if (tryOpen("res/woerterliste.txt", fp)) return true;
-    while ((read = getline(&line, &len, fp)) != -1) {
-        if (read > 1) {
-            if (line[read - 1] == '\n') read--;
-            if (read > MAXLEN) error("word %.*s too long", (int)read, line);
-            wordMap[read - cntUml(line, read)][charNum(line)].push_front(
-                strndup(line, read));
-        }
-    }
-    fclose(fp);
-    return false;
-}
 
 int main(int argc, const char* argv[]) {
-    FILE* fp   = NULL;
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    bool chkAlt = false;
+    FILE* fp = NULL;
+    uint i;
+    bool chkAlt = false, untwist = false;
+    setlocale(LC_CTYPE, "");
 
     // Argumente einlesen
     /* ... */
 
-    if (initWordMap()) return 1;
-
-    if (fp == NULL && tryOpen("res/enttwist.txt", fp)) {
-        error("initialization failed");
-        fclose(fp);
-        freeWordMap();
-        return 1;
-    }
-
     // lese Eingabedatei zeilenweise
-    while ((read = getline(&line, &len, fp)) != -1) {
-        if (read > 1) {
-            char *c = line, *b;
-            uint16_t l, corr;
+    wint_t wc;
+    wchar_t buf[MAXLEN];
+    wc = fgetwc(fp);
 
-            do {
-                // lese nicht-Wörter
-                l = 0;
-                b = c;
-                while (*c && charNum(c) == CHRCNT) c++, l++;
-                printf("%.*s", l, b);
+    // randomize
+    srand(clock() + (long)fp);
 
-                // lese Wörter
-                l = 0;
-                b = c;
-                while (*c && charNum(c) != CHRCNT) c++, l++;
+    while (wc && wc != WEOF) {
+        uint l;
+        int corr;
 
-                // Keine vertauschten Bst. möglich
-                if (l < 3 || l - cntUml(b, l) <= 3) {
-                    printf("\033[0;32m%.*s\033[0;37m", l, b);
+        // lese & schreibe nicht-Wörter
+        l    = 0;
+        *buf = wc;
+        while (wc != WEOF && charNum(wc) == CHRCNT) {
+            if (wc == '\033') // ignore color escape sequences
+                fwscanf(fp, L"[%i;%im", &i, &i);
+            else
+                buf[l++] = wc;
+            wc = fgetwc(fp);
+        }
+        wprintf(L"%.*ls", l, buf);
+
+        // lese Wörter
+        l    = 0;
+        *buf = wc;
+        while (wc != WEOF && charNum(wc) != CHRCNT) {
+            buf[l++] = wc;
+            wc       = fgetwc(fp);
+        }
+
+
+        // Keine vertauschten Bst. möglich
+        if (l <= 3) {
+            wprintf(L"\033[0;%im%.*ls\033[0;37m", untwist ? 32 : 37, l, buf);
+            continue;
+
+            // Wort zu lang
+        } else if (untwist && l > MAXLEN) {
+            wprintf(L"\033[0;31m%.*ls\033[0;37m", l, buf);
+            continue;
+        }
+
+        // twist word
+        if (!untwist) {
+            for (i = 2; i <= l; i++)
+                swap(buf[rand() % (l - 2) + 1], buf[rand() % (l - 2) + 1]);
+
+            wprintf(L"%.*ls", l, buf);
+
+            // untwist
+        } else {
+            wchar_t p[MAXLEN], tmp[MAXLEN], *match = NULL;
+            uint j, found = 0;
+            corr = 255;
+
+        search:
+            // suche Basiswörter
+            for (wchar_t* word: wordMap[l][charNum(*buf)]) {
+                if ((buf[l - 1] != word[l - 1]) || // Endbst. verschieden
+                    ((buf[0] != word[0]) &&        // Anfangsbst. verschieden
+                     (buf[0] != word[0] - 32)) ||  // klein->groß
+                    (cntUml(buf, l) != cntUml(word, l)) // gleiche Umlautzahl
+                )
                     continue;
 
-                    // Wort zu lang
-                } else if (l > MAXLEN) {
-                    printf("\033[0;31m%.*s\033[0;37m", l, b);
-                    continue;
-                }
+                // kopiere Eingabewort zu p für Buchstabenzählung
+                wcsncpy(p, buf, l);
 
-                char p[l], t[l], *match = NULL;
-                uint8_t i, j, found     = 0;
-                corr = 0;
-
-            search:
-                // suche Basiswörter
-                for (char* word: wordMap[l - cntUml(b, l)][charNum(b)]) {
-                    if ((b[l - 1] != word[l - 1]) || // Endbst. verschieden
-                        ((b[0] != word[0]) &&        // Anfangsbst. verschieden
-                         (b[0] != word[0] - 'a' + 'A')) // klein->groß
-                    )
-                        continue;
-
-                    // kopiere Eingabewort zu p für Buchstabenzählung
-                    strncpy(p, b, l);
-
-                    // von 1 - l-1 weil Anfangs- und Endbuchstaben bereits
-                    // überprüft worden sind
-                    for (i = 1; i < l - 1; i++) {
-                        for (j = 1; j < l - 1; j++) {
-                            if (charNum(word + i) == charNum(p + j)) {
-                                p[j] = ' '; // überschreibe gefundene Zeichen
-                                break;
-                            }
+                // von 1 - l-1 weil Anfangs- und Endbuchstaben bereits
+                // überprüft worden sind
+                for (i = 1; i < l - 1; i++) {
+                    for (j = 1; j < l - 1; j++) {
+                        if (charNum(word[i]) == charNum(p[j])) {
+                            p[j] = ' '; // überschreibe gefundene Zeichen
+                            break;
                         }
-
-                        // Zeichen nicht gefunden
-                        if (j == l - 1) break;
                     }
 
-                    // alle Zeichen gefunden
-                    if (i == l - 1) {
-                        if (match) {
-                            // gleiches Wort gefunden -> überspringen
-                            if (!strncmp(match + 1, word + 1, l - 1)) continue;
+                    // Zeichen nicht gefunden
+                    if (j == l - 1) break;
+                }
 
-                            // bereits anderes Wort gefunden -> gelb
-                            printf("\033[0;33m%.*s\033[0;37m|", l, match);
-                        }
+                // alle Zeichen gefunden
+                if (i == l - 1) {
+                    if (match) {
+                        // gleiches Wort gefunden -> überspringen
+                        if (!wcsncmp(match + 1, word + 1, l - 1)) continue;
 
-                        // kopiere richtiges Wort temporär in Eingabezeile
-                        // Anfangs- und Endbuchstabe wird beibehalten
-                        strncpy(b + 1, word + 1, l - 2);
-                        match = b;
-                        found++;
+                        // bereits anderes Wort gefunden -> gelb
+                        wprintf(L"\033[0;33m%.*ls\033[0;37m|", l, match);
                     }
+
+                    // kopiere richtiges Wort temporär in Eingabezeile
+                    // Anfangs- und Endbuchstabe wird beibehalten
+                    wcsncpy(buf + 1, word + 1, l - 2);
+                    match = buf;
+                    found++;
                 }
+            }
 
-                // teste Schreibalternativen
-                if (chkAlt && !found) {
-                    /* ... */
+            // teste Schreibalternativen
+            if (chkAlt && !found) {
+                if (corr == 255) {
+                    corr = 0;
+                    // Temp-Speicher
+                    wcsncpy(tmp, buf, l);
+
+                    wchar_t* f;
+                    uint d;
+
+                    // ß -> ss
+                    if ((d = (f = wcschr(buf, L'ß')) - buf) < l) {
+                        wcsncpy(f + 1, tmp + d, l - d);
+                        *f   = L's';
+                        f[1] = L's';
+                        corr--;
+                        l++;
+                    }
+                    // h ->
+                    else if ((d = (f = wcschr(buf, L'h')) - buf) < l) {
+                        wcsncpy(f, f + 1, l - d + 1);
+                        corr++;
+                        l--;
+                    }
+                    // dt -> t
+                    else if (
+                        (wcschr(buf, L't') - buf < l) &&
+                        (d = (f = wcschr(buf, L'd')) - buf) < l) {
+                        wcsncpy(f, f + 1, l - d);
+                        corr++;
+                        l--;
+                    }
+
+                    goto search;
+                } else {
+                    // Rückkopieren falls erfolglos
+                    l += corr;
+                    wcsncpy(buf, tmp, l);
                 }
+            }
 
-                if (found == 1) // eine Übereinstimmung -> grün
-                    printf("\033[0;32m%.*s\033[0;37m", l, match);
-                else if (!found) // keine Übereinstimmung -> rot
-                    printf("\033[0;31m%.*s\033[0;37m", l, b);
-                else // mehrere Übereinstimmungen -> gelb
-                    printf("\033[0;33m%.*s\033[0;37m", l, match);
-
-            } while (*c);
-        } else
-            printf("\n");
+            if (found == 1) // eine Übereinstimmung -> grün
+                wprintf(L"\033[0;32m%.*ls\033[0;37m", l, match);
+            else if (!found) // keine Übereinstimmung -> rot
+                wprintf(L"\033[0;31m%.*ls\033[0;37m", l, buf);
+            else // mehrere Übereinstimmungen -> gelb
+                wprintf(L"\033[0;33m%.*ls\033[0;37m", l, match);
+        }
     }
 
-    printf("\n");
+    wprintf(L"\n");
     fclose(fp);
-    free(line);
-    freeWordMap();
+    if (untwist) freeWordMap();
     return 0;
 }
+
 
 \end{lstlisting}
 

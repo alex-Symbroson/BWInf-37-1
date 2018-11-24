@@ -1,8 +1,4 @@
 
-/*
- *
- */
-
 // Includes
 #include "../base/base.hpp"
 
@@ -24,10 +20,8 @@ const char* helpStr =
 
 
 #define MAXLEN 40 // maximale Wortlänge
-#define CHRCNT \
-    (26 + 10) // = 26 Buchstaben + 9 verwendete Sonderzeichen + 1 für andere
-              // Sonderzeichen
-
+#define CHRCNT (26 + 10)
+// = 26 Buchstaben + 9 verwendete Umlaute + 1 für andere Sonderzeichen/Umlaute
 
 
 // speichert Wörter sortiert nach Länge
@@ -37,16 +31,12 @@ wchar_t uml[] = L"ÜÄÖßÉÀÊÂÑ";
 
 // gibt Zeichennummer zurück (nicht Zeichencode)
 uint charNum(wchar_t wc) {
-    if (isalpha(wc)) return toupper(wc) - 'A';
+    if (isalpha(wc)) return towupper(wc) - 'A';
 
     if (iswalpha(wc)) {
         // check special chars
-
-        wchar_t* p = wcschr(uml, wc);
-        if (p)
-            return CHRCNT - (p - uml) - 2;
-        else
-            return CHRCNT - 1;
+        wchar_t* p = wcschr(uml, towupper(wc));
+        return CHRCNT - (p ? p - uml + 2 : 1);
     }
     return CHRCNT;
 }
@@ -58,10 +48,10 @@ uint cntUml(wchar_t* word, int len = -1) {
 
     if (len == -1) {
         while (*c)
-            if (wcschr(uml, *c++)) n++;
+            if (wcschr(uml, towupper(*c++))) n++;
     } else {
         for (i = 0; i < len && *c; i++)
-            if (wcschr(uml, *c++)) n++;
+            if (wcschr(uml, towupper(*c++))) n++;
     }
 
     return n;
@@ -131,7 +121,7 @@ int main(int argc, const char* argv[]) {
     }
 
     if (fp == NULL) {
-        fwprintf(stderr, L"press ctrl-d to exit from input\n\n");
+        fwprintf(stderr, L"info: press ctrl-d to exit from input\n\n");
         fp = stdin;
     }
 
@@ -150,7 +140,8 @@ int main(int argc, const char* argv[]) {
     srand(clock() + (long)fp);
 
     while (wc && wc != WEOF) {
-        uint l, corr;
+        uint l;
+        int corr;
 
         // lese & schreibe nicht-Wörter
         l    = 0;
@@ -193,9 +184,9 @@ int main(int argc, const char* argv[]) {
 
             // untwist
         } else {
-            wchar_t p[MAXLEN], *match = NULL;
-            uint j, found             = 0;
-            corr = 0;
+            wchar_t p[MAXLEN], tmp[MAXLEN], *match = NULL;
+            uint j, found = 0;
+            corr = 255;
 
         search:
             // suche Basiswörter
@@ -244,48 +235,42 @@ int main(int argc, const char* argv[]) {
 
             // teste Schreibalternativen
             if (chkAlt && !found) {
-                if (!corr) {
+                if (corr == 255) {
+                    corr = 0;
                     // Temp-Speicher
-                    corr = 1;
-                    wcsncpy(p, buf, l);
-
+                    wcsncpy(tmp, buf, l);
 
                     wchar_t* f;
                     uint d;
 
                     // ß -> ss
-                    while ((f = wcsstr(buf, L"ß"))) {
-                        if ((d = f - buf) >= l) break;
-                        wcsncpy(f + 1, f, l - d);
+                    if ((d = (f = wcschr(buf, L'ß')) - buf) < l) {
+                        wcsncpy(f + 1, tmp + d, l - d);
                         *f   = L's';
                         f[1] = L's';
-                        corr++;
+                        corr--;
                         l++;
                     }
-
-                    // th -> t
-                    while ((f = wcsstr(buf, L"th"))) {
-                        if ((d = f - buf) >= l) break;
-                        wcsncpy(buf + (d + 1), buf + (d + 2), l - d - 1);
+                    // h ->
+                    else if ((d = (f = wcschr(buf, L'h')) - buf) < l) {
+                        wcsncpy(f, f + 1, l - d + 1);
+                        corr++;
+                        l--;
+                    }
+                    // dt -> t
+                    else if (
+                        (wcschr(buf, L't') - buf < l) &&
+                        (d = (f = wcschr(buf, L'd')) - buf) < l) {
+                        wcsncpy(f, f + 1, l - d);
                         corr++;
                         l--;
                     }
 
-                    // Th -> T
-                    while ((f = wcsstr(buf, L"Th"))) {
-                        if ((d = f - buf) >= l) break;
-                        wcsncpy(buf + (d + 1), buf + (d + 2), l - d - 1);
-                        corr++;
-                        l--;
-                    }
-
-                    if (corr > 1) goto search;
-                }
-
-                // Rückkopieren falls erfolglos
-                if (corr) {
-                    l += corr - 1;
-                    wcsncpy(buf, p, l);
+                    goto search;
+                } else {
+                    // Rückkopieren falls erfolglos
+                    l += corr;
+                    wcsncpy(buf, tmp, l);
                 }
             }
 
