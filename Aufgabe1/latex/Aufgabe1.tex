@@ -1,4 +1,5 @@
 \documentclass[a4paper,10pt,ngerman]{scrartcl}
+\usepackage{arev}
 \usepackage{babel}
 \usepackage{eurosym}
 \usepackage[T1]{fontenc}
@@ -6,8 +7,8 @@
 \usepackage[a4paper,margin=2.5cm]{geometry}
 
 % Die nächsten drei Felder bitte anpassen:
-\newcommand{\Name}{Symbroson} % Teamname oder eigenen Namen angeben
-\newcommand{\TeamId}{00165}                       % Team-ID aus dem PMS
+\newcommand{\Name}{Symbroson}               % Teamname oder eigenen Namen angeben
+\newcommand{\TeamId}{00165}                 % Team-ID aus dem PMS
 \newcommand{\Aufgabe}{Aufgabe 1: Superstar} % Aufgabennummer und -name
 
 % Kopf- und Fußzeilen
@@ -44,7 +45,7 @@
     captionpos=b, keepspaces=true, numberfirstline=false,
     numbers=left, numbersep=5pt, showspaces=false, showstringspaces=false,
     showtabs=false, stepnumber=5, tabsize=4, title=\lstname, firstnumber=1,
-    language=C++, literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
+    literate={ß}{{\ss}}1 {€}{{\euro}}1 {£}{{\pounds}}1
     {ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
 }
 
@@ -68,7 +69,7 @@
 \begin{document}
 
 \maketitle
-\pagebreak
+\vspace{7\baselineskip}
 \tableofcontents
 \pagebreak
 
@@ -164,7 +165,7 @@ Estimation (on success):
 \pagebreak
 \section{Quellcode}
 
-\begin{lstlisting} %[frame=single]
+\begin{lstlisting}[language=C++]
 
 /* ... */
 
@@ -185,44 +186,6 @@ uint count = 0, // gesamt User-Anzahl
     stars  = 0, // verbleibende Superstars
     cost   = 0, // entstandene Kosten
     *follow;    // gespeicherte Abfragen
-
-/* ... */
-
-bool initSuperstar(FILE* fp) {
-    char *line = NULL, *pch;
-    uint read;
-    size_t len = 0;
-
-    // lese Namenliste
-    if ((read = getline(&line, &len, fp)) == (uint)-1) {
-        error("Error reading file");
-        return true;
-    }
-
-    char buffer[read];
-    strncpy(buffer, line, read);
-
-    // parse Namenliste
-    pch = strtok(buffer, " \n");
-    while (pch != NULL) {
-        if (isalpha(*pch)) {
-            users.push_back({.name = strdup(pch), .id = count, .star = true, .follows = {}});
-            count++;
-        }
-        pch = strtok(NULL, " \n");
-    }
-
-    // lese Folgebeziehungen
-    User* cur = NULL;
-    while ((read = getline(&line, &len, fp)) != (uint)-1) {
-        if (!(pch = strtok(line, " \n"))) continue;
-        if (cur == NULL || strcmp(pch, cur->name)) cur = findUser(pch);
-        cur->follows.push_back(findUser(strtok(NULL, " \n")));
-    }
-
-    free(line);
-    return false;
-}
 
 /* ... */
 
@@ -260,24 +223,9 @@ bool follows(User& a, User& b, bool nobrk) {
 }
 
 int main(int argc, const char* argv[]) {
-    FILE* fp = NULL;
     uint i;
 
-    // Argumente einlesen
     /* ... */
-
-    // Datei öffnen
-    if (fp == NULL && tryOpen("res/superstar1.txt", fp)) {
-        error("no input file");
-        return 1;
-    }
-
-    // Datei einlesen
-    if (initSuperstar(fp)) {
-        fclose(fp);
-        error("initialization failed");
-        return 1;
-    }
 
     // Namen mit ID ausgeben
     printf("\nNames:\n");
