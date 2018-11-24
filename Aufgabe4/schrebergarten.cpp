@@ -101,13 +101,9 @@ bool initSchrebergaerten(FILE *fp) {
             dx = dy = 0;
             read    = false;
 
-            // prüfe Zeile auf "[n].\n" ([n] -> index)
-        } else {
-            c  = 0;
-            lp = line;
-            while (isdigit(*lp)) c = 10 * c + *lp++ - '0';
-            read = lp[0] == '.' && lp[1] == '\n';
-        }
+            // prüfe Zeile auf "[n]. Beispiel\n" ([n] -> index)
+        } else
+            read = sscanf(line, "%i. Beispiel:\n", &c) == 1;
     }
 
     return false;

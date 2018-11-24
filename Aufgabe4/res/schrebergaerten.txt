@@ -11,3 +11,6 @@ Lösung der Aufgabe nicht benötigt):
 
 3. Beispiel:
 4 x 4, 2 x 3, 6 x 1, 5 x 2, 3 x 5.
+
+4. Beispiel:
+5 x 1, 5 x 1, 6 x 1, 5 x 1, 5 x 1.
