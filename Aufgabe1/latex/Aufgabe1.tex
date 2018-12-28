@@ -39,7 +39,7 @@
 \definecolor{clgray}{gray}{0.95}
 \lstset{
     columns=fullflexible, xleftmargin=0.5cm, frame=tlbr, framesep=4pt, framerule=0pt,
-    backgroundcolor = \color{clgray}, keywordstyle=\color{blue},
+    backgroundcolor=\color{clgray}, keywordstyle=\color{blue},
     commentstyle=\color{clgreen}, stringstyle=\color{clmauve},
     rulecolor=\color{black}, basicstyle=\footnotesize\ttfamily,
     numberstyle=\tiny\color{clgrey},
@@ -79,9 +79,9 @@
 \pagebreak
 
 \section{Lösungsidee}
-Jeder User steht mit allen Anderen in Beziehung und jede Beziehung schließt jemanden davon aus, der Superstar zu sein: Folgt User A User B, kann User A kein Superstar sein, da der Superstar niemandem folgen darf, und die Wahrscheinlichkeit, dass User B der Superstar ist, steigt. Folgt User A User B nicht, kann User B kein Superstar sein, da alle anderen dem Superstar folgen müssen, dafür kan User A weiterhin ein Superstar sein.
+Jeder User steht mit allen anderen in Beziehung und jede Beziehung schließt jemanden \\ davon aus, der Superstar zu sein: Folgt User A User B, kann User A kein Superstar sein, da der Superstar niemandem folgen darf, und die Wahrscheinlichkeit, dass User B der Superstar ist, steigt. Folgt User A User B nicht, kann User B kein Superstar sein, da alle anderen dem Superstar folgen müssen, dafür kann User A weiterhin ein Superstar sein.
 
-Somit kann im ersten Schritt mit n-1 Abfragen ein einziger User bestimmt werden, der der Superstar sein kann. Danach muss dieser nur noch durch die Bedingungen, dass alle dem Superstar und der Superstar niemandem folgt, validiert werden, da es sein kann, das er von jemandem nicht gefolgt wird der noch nicht geprüft wurde, oder dass er jemandem folgt, der schon vorher ausgeschlossen wurde.
+Somit kann im ersten Schritt mit n-1 Abfragen ein einziger User bestimmt werden, der der Superstar sein kann. Danach muss dieser nur noch durch die Bedingungen, dass alle dem Superstar und der Superstar niemandem folgt, validiert werden, da es sein kann, dass er von jemandem nicht gefolgt wird der noch nicht geprüft wurde, oder dass er jemandem folgt, der schon vorher ausgeschlossen wurde.
 
 Um doppelte Anfragen zu vermeiden, können außerdem bereits abgefragte Beziehungen gespeichert werden.
 
@@ -100,12 +100,12 @@ Die Anfragen werden in einem (eigentlich zweidimensionalen, in diesem Fall wegen
 Der erste Schritt besteht nun darin, den ersten User als Superstar anzunehmen und die Beziehung zum folgenden User zu prüfen. Folgt User1 User2, wird User2 der neue Superstar und User1 ausgeschlossen, andernfalls umgekehrt. Danach wird die Beziehung des verbleibenden Superstars zum dritten User abgefragt, ein User ausgeschlossen usw.. Dies wiederholt man n-1 mal, sodass am Ende nur ein User als Superstar infrage kommt.
 
 \subsection{Superstarvalidierung}
-Die Validierung erfolgt dann nurnoch durch Abfragen zwischen allen Usern und dem Superstar und umgekehrt. Somit entstehen im Worst-Case noch 2*(n-1) Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was noch einmal n-1, also insgesamt 2*(n-1) Anfragen erfordert.
+Die Validierung erfolgt dann nur noch durch Abfragen zwischen allen Usern und dem Superstar und umgekehrt. Somit entstehen im Worst-Case noch 2*(n-1) Anfragen, also insgesamt 3*(n-1) Anfragen. Im Best-Case ist der erste gelistete User bereits der Superstar und es muss nur noch geprüft werden, ob alle anderen ihm folgen, was noch einmal n-1, also insgesamt 2*(n-1) Anfragen erfordert.
 
 Gibt es keinen Superstar in der Gruppe, können im Best-Case n Anfragen ausreichen, wenn der zweite User dem ersten folgt.
 
 \subsection{Ausgabe}
-Es werden zunächst alle User mit deren entsprechenden ID im Format (ID:Name) ausgegeben, auf die sich dann in Folgenden Ausgaben bezogen wird. In den Abfragetabellen werden in dieser Reihenfolge erst der aktuell angenommene Superstar, der User zu dem die Beziehung getestet wird, das Ergebnis der Anfrage als Wahrheitswert, die Kosten, die die Anfrage verursacht hat (0, wenn bereits zuvor dieselbe Anfrage getätig wurde, sonst 1), und am Ende der Zeile die aktuelle Gesamtsumme der bereits entstandenen Kosten.
+Es werden zunächst alle User mit deren entsprechenden ID im Format (ID:Name) ausgegeben, auf die sich dann in folgenden Ausgaben bezogen wird. In den Abfragetabellen werden in dieser Reihenfolge erst der aktuell angenommene Superstar, der User zu dem die Beziehung getestet wird, das Ergebnis der Anfrage als Wahrheitswert, die Kosten, die die Anfrage verursacht hat (0, wenn bereits zuvor dieselbe Anfrage getätig wurde, sonst 1), und am Ende der Zeile die aktuelle Gesamtsumme der bereits entstandenen Kosten.
 Zwischen Superstarerkennung und Superstarvalidierung wird noch einmal der aktuell vermutete Superstar namentlich ausgegeben.
 Nachdem die Existenz eines Superstar ermittelt wurde, erfolgt eine entsprechende Ausgabe, die Anzahl der Personen samt entstandener Kosten und die Preisschätzung.
 

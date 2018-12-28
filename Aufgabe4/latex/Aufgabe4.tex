@@ -88,13 +88,13 @@ Im zweiten Schritt limitiert man die Breite des Rechtecks um einen Garten und so
 
 Nachdem alle Gärten eingeordnet sind, wird die Fläche des entstandenen Rechteckes berechnet und ggf. das Minimum überschrieben. Das wird solange wiederholt, bis das Reckteck so breit wie der breiteste Garten ist, denn schmaler kann das Rechteck nicht sein.
 
-Dies allein reicht aber micht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt. Deswegen müssen alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert werden. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
+Dies allein reicht aber nicht aus, um die optimale Anordnung der Gärten zu finden. Schließlich kann man die Gärten in jeder beliebigen Reihenfolge einsortieren, was zwangsläufig zu anderen Ergebnissen führt. Deswegen müssen alle Permutationen der Gärten ausprobiert und wie beschrieben in ein Rechteck einsortiert werden. Am Ende kann dann das Rechteck mit der geringsten Fläche ausgegeben werden.
 
 
 \pagebreak
 \section{Umsetzung}
 
-Jeder Garten besitzt Imformationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Abstrahierung wieder als Klasse mit den genannten Eigenschaften.
+Jeder Garten besitzt Informationen über Höhe und Breite, aber auch die X,Y Position und eine ID für die Farbgebung später bei der Ausgabe. Deshalb erfolgt die Abstrahierung wieder als Klasse mit den genannten Eigenschaften.
 
 Um während des gesamten Einsortierungssprozesses Zeit zu sparen, wird bereits während des Einlesens der Gartenlisten der ggT von Höhe und Breite einer Gartenliste berechnet, um dann alle Höhen und Breiten durch dieses teilen zu können.
 

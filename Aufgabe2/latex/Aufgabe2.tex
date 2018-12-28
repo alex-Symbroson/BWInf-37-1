@@ -114,7 +114,7 @@ In einer dritten Stufe kann man dann auch noch den Endbuchstaben betrachten. Som
 \pagebreak
 \newsubsection{Wortverdrehung}
 
-Standardmäßig wird die Eingabe per Eingabedatei oder durch lesen des Input-Streames (stdin) getwistet.
+Standardmäßig wird die Eingabe per Eingabedatei oder durch Lesen des Input-Streames (stdin) getwistet.
 Hierbei werden abwechselnd Sonderzeichen und Alphabetische Zeichen bis zum nächsten Leerzeichen eingelesen und in letzterem Fall alle Zeichen zwischen dem ersten und letzten Buchstaben des Wortes mit einem zufälligen Buchstaben aus demselben Bereich vertauscht, bevor sie ausgegeben werden.
 
 \newsubsection{Wortentdrehung}
@@ -125,7 +125,7 @@ Die Wortentdrehung erfolgt mit der --untwist Option und folgt beim Einlesen dems
 Jedes Wort wird zunächst auf seine Länge geprüft. Ist es kürzer als 4 Zeichen oder länger als die maximal definierte Länge, wird ebenfalls sofort ausgegeben, da es keine vertauschten Buchstaben geben bzw. nicht in der Wortliste verzeichnet worden sein kann.
 
 \newsubsubsection{Erstauswahl}
-Ist all dies nicht der Fall, wird dass Wort in der Wortliste gesucht. Dabei werden zuerst Anfangs- und Endbuchstaben verglichen. Bei den Anfangsbuchstaben muss beachtet werden, dass ein in der Wortliste klein geschriebenes Wort im Text großgeschrieben sein kann, wenn es am Satzanfang steht, allerdings kann ein inder Wortliste groß geschriebenes Wort niemals klein geschrieben sein.
+Ist all dies nicht der Fall, wird dass Wort in der Wortliste gesucht. Dabei werden zuerst Anfangs- und Endbuchstaben verglichen. Bei den Anfangsbuchstaben muss beachtet werden, dass ein in der Wortliste klein geschriebenes Wort im Text großgeschrieben sein kann, wenn es am Satzanfang steht, allerdings kann ein in der Wortliste groß geschriebenes Wort niemals klein geschrieben sein.
 
 \newsubsubsection{Zeichenauszählung}
 Nun werden die inneren Zeichen miteinander verglichen. Dabei werden in einer Kopie der Zeichenkette alle Buchstaben des Wortlisten-Wortes aus dem Eingabewort überschrieben, um sicherzustellen, dass die Vorkommensanzahl jedes Buchstabens im Wort übereinstimmt. So wird der Vorgang entweder abgebrochen, wenn alle Buchstaben ersetzt wurden, oder wenn ein Zeichen nicht mehr im Eingabewort gefunden werden konnte.
@@ -202,9 +202,9 @@ Mit Eigennamen verhält es sich genauso wie bei den vorherigen Beispielen. Man b
 
 \subsection{twist5.txt}
 
-Altteutsch ist ebenso schwierig zu erkennen und eine weitere Wortliste wäre vonnöten. Allerdings treten einige Ersetzungen vom Altdeutschen in die heutige Screibweise öfters auf. Die häufigsten sind beispielsweise \lstinline{"ß"} zu \lstinline{"ss"} oder \lstinline{"th"} zu \lstinline{"t"}. Diese Abfrage kann optional in dem Programm durch die \lstinline{--ckeck-alt} Flag eingeschalten werden, da man standardmäßig von Hochdeutsch ausgeht und andernfalls woanders ungewollt Fehler entstehen können, die sonst nicht aufträten.
+Altdeutsch ist ebenso schwierig zu erkennen und eine weitere Wortliste wäre vonnöten. Allerdings treten einige Ersetzungen vom Altdeutschen in die heutige Screibweise öfters auf. Die häufigsten sind beispielsweise \lstinline{"ß"} zu \lstinline{"ss"} oder \lstinline{"th"} zu \lstinline{"t"}. Diese Abfrage kann optional in dem Programm durch die \lstinline{--ckeck-alt} Flag eingeschalten werden, da man standardmäßig von Hochdeutsch ausgeht und andernfalls woanders ungewollt Fehler entstehen können, die sonst nicht aufträten.
 
-Ohne --chek-alt Option:
+Ohne lstinline{--check-alt} Option:
 \begin{lstlisting}
 @SH$ make; ./build/twist.out res/twist5.txt | ./build/twist.out --untwist@SH
 ...

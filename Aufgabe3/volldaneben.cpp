@@ -1,8 +1,4 @@
 
-/*
- *
- */
-
 // Includes
 #include "../base/base.hpp"
 

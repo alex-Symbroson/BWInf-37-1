@@ -79,7 +79,7 @@
 
 \section{Lösungsidee}
 \vspace{1\baselineskip}
-Um die Beste Schaltung ermitteln zu können muss man zwei Dinge implementieren: Zum einen muss man jede Mögliche Schaltung, also Kombinationen von Reihen- und Parallelschaltungen ausprobieren, und man muss die Widerstände selbst innerhalb der Schaltung tauschen, wobei das Tauschen zweier in Reihe oder Parallel geschalteter Widerstände vernachlässigbar ist. Schließlich muss von jeder Schaltung der Widerstandswert berechnet und die mit dem geringsten Unterschied zum gesuchten Widerstand in geeigneter Form ausgegeben werden.
+Um die Beste Schaltung ermitteln zu können muss man zwei Dinge implementieren: Zum einen muss man jede mögliche Schaltung, also Kombinationen von Reihen- und Parallelschaltungen ausprobieren, und man muss die Widerstände selbst innerhalb der Schaltung tauschen, wobei das Tauschen zweier in Reihe oder Parallel geschalteter Widerstände vernachlässigbar ist. Schließlich muss von jeder Schaltung der Widerstandswert berechnet und die mit dem geringsten Unterschied zum gesuchten Widerstand in geeigneter Form ausgegeben werden.
 
 
 \pagebreak
@@ -88,14 +88,14 @@ Um die Beste Schaltung ermitteln zu können muss man zwei Dinge implementieren: 
 Die Eingabe des gesuchten Widerstandswertes erfolgt in der Konsole aus der Standardeingabe (stdin).
 
 \subsection{Permutation}
-Dann werden werden k Widerstände durch einen rekursiven Permutationsalgorithmus aus der gegebenen Liste ausgewählt. Dieser zählt jeweils mit, wie viele Elemente er bereits genommen hat, schreibt ab der Startposition jedes Element an die aktuellen Position in eine andere Liste und ruft sich selbst an der darauf folgenden Position als neuen Start auf. Die Schaltungen werden dann auf basis der generierten Widerstandsliste getestet.
+Dann werden werden k Widerstände durch einen rekursiven Permutationsalgorithmus aus der gegebenen Liste ausgewählt. Dieser zählt jeweils mit, wie viele Elemente er bereits genommen hat, schreibt ab der Startposition jedes Element an die aktuellen Position in eine andere Liste und ruft sich selbst an der darauf folgenden Position als neuen Start auf. Die Schaltungen werden dann auf Basis der generierten Widerstandsliste getestet.
 
 Beim Testvorgang wurde auf eine dynamische Generierung der Schaltungen verzichtet und stattdessen jede mögliche Schaltung hardgecodet. Das hat unter Anderem die Folge, dass eine Schaltung eliminiert werden kann, weil sie einer anderen gleicht.
 
-Die möglichen Permutationen der Widerstände innerhalb einer Schaltung sind, falls vorhanden, ebenfalls hardgecodet und als Array von Zeichenketten mit Indizes auf die Auswahlliste dargestellt. Dabei wurden all jene Permutationen Gestrichen, bei denen zwei Widerstände innerhalb einer Parallel- oder Reihenschaltung getauscht wurden, aber der Rest innerhalb der Schaltung einer anderen gleicht, da sie in ihrer Auswirkung in jedem Fall identisch wären.
+Die möglichen Permutationen der Widerstände innerhalb einer Schaltung sind, falls vorhanden, ebenfalls hardgecodet und als Array von Zeichenketten mit Indizes auf die Auswahlliste dargestellt. Dabei wurden all jene Permutationen gestrichen, bei denen zwei \\ Widerstände innerhalb einer Parallel- oder Reihenschaltung getauscht wurden, aber der Rest innerhalb der Schaltung einer anderen gleicht, da sie in ihrer Auswirkung in jedem Fall identisch wären.
 
 \subsection{Berechnung}
-Das Berechnen des Widerstandswertes einer Schaltung hängt von der Notation der Funktionsmakros ab. So ist zB. \lstinline[language=C++]{ROW(R(0), PAR(R(1), R(2)))} eine Reihenschaltung mit dem Widerstand an erster Position und einer Parallelschaltung von den anderen zwei Widerständen an zweiter Position. \\
+Das Berechnen des Widerstandswertes einer Schaltung hängt von der Notation der Funktionsmakros ab. So ist zum Beispiel \lstinline[language=C++]{ROW(R(0), PAR(R(1), R(2)))} eine Reihenschaltung mit dem Widerstand an erster Position und einer Parallelschaltung von den anderen zwei Widerständen an zweiter Position. \\
 Die Formeln für Reihen- und Parallelschaltung sind jeweils $\sum\nolimits R_i$  bzw  $\dfrac{1}{\sum\nolimits 1/R_i}$.
 
 \subsection{Ausgabe}
@@ -112,7 +112,7 @@ Die Berechnung ist zugleich verbunden mit dem Schreiben der verwendeten Schaltun
 \lstinline{  -1:} Ende der gesamten Schaltung \\
 Somit ist eine effiziente Speicherung der Schaltung und später eine einfache Text Ausgabe möglich, bei der die Elemente jeweils ausformuliert geschrieben werden.
 
-Die Elemente einer Reihen- ('Series') oder Parallel- ('Parallel') -schaltung werden jeweils in runden Klammern '(...)' mit einem Komma ',' getrennt notiert, und die Widerstandswerte mit einem '\si{\ohm}' Zeichen gekennzeichnet.
+Die Elemente einer Reihen- ('Series') oder Parallel- ('Parallel') schaltung werden jeweils in runden Klammern '(...)' mit einem Komma ',' getrennt notiert, und die Widerstandswerte mit einem '\si{\ohm}' Zeichen gekennzeichnet.
 
 
 \pagebreak
@@ -333,7 +333,7 @@ int main(int argc, char* argv[]) {
     printf("got %i Ω\n", srch_r);
 
     // Schaltungen mit k aus n Wiederständen testen
-    for (ck = 0; ck <= 4; ck++) permut_mn(ck, 0);
+    for (ck = 1; ck <= 4; ck++) permut_mn(ck, 0);
 
     // Ausgabe
     printf("best: circuit %i with %f Ω difference\n", *best_c, best_d);

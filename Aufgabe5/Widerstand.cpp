@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
     printf("got %i Ω\n", srch_r);
 
     // Schaltungen testen
-    for (ck = 0; ck <= 4; ck++) permut_mn(ck, 0);
+    for (ck = 1; ck <= 4; ck++) permut_mn(ck, 0);
 
     // Ausgabe
     printf("best: circuit %i with %f Ω difference\n", *best_c, best_d);
